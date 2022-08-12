@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    username: postgres
+    password: Wy754inp0#
+    url: jdbc:postgresql://localhost:5432/pwmanager
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+    database: POSTGRESQL
+
+logging:
+  level:
+    root:  info
+    org:
+      springframework: info
+      hibernate: info
+      apache: info

@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    username: oorntmzktyoxem
+    password: fe2c223652d4428cd4f236f0e4a918cf16589be052ceb0ca1745b2a85d23a6a5
+    url: jdbc:postgresql://ec2-63-32-248-14.eu-west-1.compute.amazonaws.com:5432/d35f8dlmon68qj
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+    database: POSTGRESQL
+
+logging:
+  level:
+    root: info
+    org:
+      springframework: info
+      hibernate: info
+      apache: info
