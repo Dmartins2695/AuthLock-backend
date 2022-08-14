@@ -34,6 +34,9 @@ logging:
   level:
     root:  info
     org:
-      springframework: info
+      springframework:
+        security:
+          web:
+            FilterChainProxy: Debug
       hibernate: info
       apache: info

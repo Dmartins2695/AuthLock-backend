@@ -12,7 +12,7 @@
 	<artifactId>pwmanager</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>pwmanager</name>
-	<description>Demo project for Spring Boot</description>
+	<description>Pwm project Spring Boot</description>
 	<properties>
 		<java.version>18</java.version>
 	</properties>
