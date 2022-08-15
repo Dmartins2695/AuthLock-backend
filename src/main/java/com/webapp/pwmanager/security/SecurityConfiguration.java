@@ -22,7 +22,7 @@ public class SecurityConfiguration {
     @Bean
     protected SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.
-        requiresChannel((channel) -> channel.anyRequest().requiresSecure())
+        requiresChannel((channel) -> channel.anyRequest().requiresSecure()).formLogin().and()
                 .authorizeRequests()
                 .anyRequest()
                 .authenticated();
