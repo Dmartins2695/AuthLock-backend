@@ -37,3 +37,9 @@ logging:
       springframework: info
       hibernate: info
       apache: info
+      
+server:
+  tomcat:
+    remoteip:
+      remote-ip-header: "x-forwarded-for"
+      protocol-header: "x-forwarded-proto"
