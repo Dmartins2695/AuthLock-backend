@@ -21,10 +21,8 @@ import java.util.List;
 public class SecurityConfiguration {
     @Bean
     protected SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.requiresChannel()
-                .requestMatchers(r -> r.getHeader("X-Forwarded-Proto") != null)
-                .requiresSecure()
-                .and()
+        http.
+        requiresChannel((channel) -> channel.anyRequest().requiresSecure())
                 .authorizeRequests()
                 .anyRequest()
                 .authenticated();
