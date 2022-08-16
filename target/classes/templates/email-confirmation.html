@@ -2,12 +2,13 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title th:remove="all">Registration confirmation</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <style type="text/css">
         body {
             font-family: calibri, 'DejaVu Sans', Arial, Helvetica, sans-serif;
         }
-        .container{
+
+        .container {
             display: flex;
             justify-content: center;
             align-items: stretch;
@@ -17,16 +18,18 @@
             flex-wrap: wrap;
             background: snow;
         }
-        .header{
+
+        .header {
             display: flex;
-            justify-content: center;
+            justify-content: flex-start;
             align-items: center;
             align-content: center;
             background: #648097;
             color: white;
             margin: 0 0 2em 0;
         }
-        .body{
+
+        .body {
             display: flex;
             align-content: center;
             justify-content: center;
@@ -34,6 +37,7 @@
             align-items: flex-start;
             padding: 0.5em;
         }
+
         a.link {
             background-color: #334456;
             text-decoration: none;
@@ -42,6 +46,14 @@
             display: block;
             text-align: center;
             padding: 10px 0;
+        }
+
+        .footer {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            align-content: center;
         }
     </style>
 </head>
@@ -52,17 +64,25 @@
 <body>
 <div class="container">
     <div class="header">
-        <h1>Confirm your account</h1>
+        <p style="margin-right: 2em;margin-left: 2em">
+            <img src="../static/images/img.png" data-th-src="|cid:PassWLogo|" height="80"/>
+        </p>
+        <h1>Welcome to PassW</h1>
     </div>
     <div class="body">
-        <div>Welcome to PassW <b th:text="${name}">name</b> !</div>
+        <div>Welcome to PassW, <b th:text="${name}">name</b>!</div>
         <p>
-            Your account has been created on our platform
-            here is your login information:
+            Your account has been created on our platform.
+            Here is your login information:
             <br><br>
             Email address : <b th:text="${email}">email</b><br>
             <br>
-            To confirm the validity of your email address, please click on the link below
+            To confirm the validity of your email address, please click on the link below!
+        </p>
+    </div>
+    <div class="footer">
+        <p>
+            Regards, The PassW Team
         </p>
     </div>
     <div class="button">
@@ -70,14 +90,8 @@
             <a class="link" href="#" th:href="${link}">Confirm my account</a>
         </p>
     </div>
-<br>
-    <div class="footer">
-        <p>
-            <img src="../static/images/img.png" data-th-src="|cid:PassWLogo|" height="80" />
-        </p>
-        <p>
-            Regards, The PassW Team
-        </p>
-    </div>
+    <br>
+
+</div>
 </body>
 </html>

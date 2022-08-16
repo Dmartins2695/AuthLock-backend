@@ -6,6 +6,7 @@ import com.webapp.pwmanager.appUser.AppUserService;
 import com.webapp.pwmanager.config.ConfigVariables;
 import com.webapp.pwmanager.email.Email;
 import com.webapp.pwmanager.email.EmailSender;
+import com.webapp.pwmanager.email.EmailValidator;
 import com.webapp.pwmanager.registration.token.ConfirmationToken;
 import com.webapp.pwmanager.registration.token.ConfirmationTokenService;
 import lombok.AllArgsConstructor;
@@ -15,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
-import javax.mail.MessagingException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -49,6 +49,7 @@ public class RegistrationService {
                 result.put("hasTokenToConfirm", true);
                 return new ResponseEntity(result, HttpStatus.OK);
             }
+            appUserService.removeAppUserNotConfirmed(existentUser.getEmail());
             throw new IllegalStateException(String.format("Email %s already exists!", existentUser.getEmail()));
         }
 

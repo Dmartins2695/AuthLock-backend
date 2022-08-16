@@ -1,4 +1,4 @@
-package com.webapp.pwmanager.registration;
+package com.webapp.pwmanager.email;
 
 import org.springframework.stereotype.Service;
 
