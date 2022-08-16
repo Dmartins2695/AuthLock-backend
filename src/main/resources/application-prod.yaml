@@ -5,13 +5,12 @@ spring:
     url: jdbc:postgresql://ec2-63-32-248-14.eu-west-1.compute.amazonaws.com:5432/d35f8dlmon68qj
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: create
     properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
+      format_sql: true
     show-sql: true
     database: POSTGRESQL
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
   mail:
     host: localhost
     port: 1025

@@ -1,45 +1,67 @@
 package com.webapp.pwmanager.security;
 
+import com.webapp.pwmanager.appUser.AppUserService;
+import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.web.authentication.AuthenticationFilter;
 
 @Configuration
+@AllArgsConstructor
 @EnableWebSecurity
 public class SecurityConfiguration {
+
+    /**
+     * Prod Configuration with https
+     */
+   /* @Bean
+    protected SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .requiresChannel((channel) -> channel.anyRequest().requiresSecure())
+            .formLogin()
+            .and()
+            .authorizeRequests()
+            .anyRequest()
+            .authenticated();
+
+        return http.build();
+    }*/
+
+    private final AppUserService appUserService;
+    private final PasswordEncoder passwordEncoder;
+
     @Bean
     protected SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.
-        requiresChannel((channel) -> channel.anyRequest().requiresSecure()).formLogin().and()
+
+        // Configure AuthenticationManagerBuilder
+        AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
+        authenticationManagerBuilder.userDetailsService(appUserService).passwordEncoder(passwordEncoder.bCryptPasswordEncoder());
+
+        // Get AuthenticationManager
+        AuthenticationManager authenticationManager = authenticationManagerBuilder.build();
+
+        http
+                .csrf().disable()
+                .authorizeRequests()
+                .antMatchers("/api/v*/registration/**")
+                .permitAll()
+                .and()
+                .formLogin()
+                .and()
                 .authorizeRequests()
                 .anyRequest()
-                .authenticated();
+                .authenticated().and()
+                .authenticationManager(authenticationManager);
 
         return http.build();
     }
-
-    /*@Bean
-    protected InMemoryUserDetailsManager configureAuthentication() {
-        List<UserDetails> userDetailsList = new ArrayList<>();
-        List<GrantedAuthority> userRoles = new ArrayList<>();
-        userRoles.add(new SimpleGrantedAuthority("USER"));
-        User p = new User("user1", new BCryptPasswordEncoder().encode("password"), userRoles);
-
-        userDetailsList.add(p);
-
-        return new InMemoryUserDetailsManager(userDetailsList);
-    }*/
 
 }

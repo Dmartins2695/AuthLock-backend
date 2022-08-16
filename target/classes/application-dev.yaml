@@ -5,19 +5,17 @@ spring:
     url: jdbc:postgresql://localhost:5432/pwmanager
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: create
     properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
     show-sql: true
     database: POSTGRESQL
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
   mail:
-    host: localhost
-    port: 1025
-    username: hello
-    password: hello
-
+    host: smtp.mailtrap.io
+    port: 2525
+    username: "e714e2f007f514"
+    password: "8dadb8a35e01a4"
     properties:
       mail:
         smtp:
