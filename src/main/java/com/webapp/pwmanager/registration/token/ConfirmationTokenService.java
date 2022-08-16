@@ -12,7 +12,7 @@ public class ConfirmationTokenService {
 
     private final ConfirmationTokenRepository confirmationTokenRepository;
 
-    public void saveConfirmationToken(ConfirmationToken token){
+    public void saveConfirmationToken(ConfirmationToken token) {
         confirmationTokenRepository.save(token);
     }
 
@@ -23,5 +23,19 @@ public class ConfirmationTokenService {
     public int setConfirmedAt(String token) {
         return confirmationTokenRepository.updateConfirmedAt(
                 token, LocalDateTime.now());
+    }
+
+    public Optional<ConfirmationToken> getTokenByAppUserId(Long id) {
+        return confirmationTokenRepository.findConfirmationTokenByAppUserId(id);
+    }
+
+    public void removeTokenByAppUserId(Long id) {
+        confirmationTokenRepository.removeTokenByAppUserId(id);
+    }
+
+    public boolean tokenNotConfirmedButValid(Long id) {
+        ConfirmationToken token = confirmationTokenRepository.findConfirmationTokenByAppUserId(id).get();
+
+        return  token.getConfirmedAt() == null && token.getExpiresAt().isAfter(LocalDateTime.now());
     }
 }
