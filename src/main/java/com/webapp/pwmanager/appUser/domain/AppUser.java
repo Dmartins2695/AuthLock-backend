@@ -1,5 +1,6 @@
 package com.webapp.pwmanager.appUser.domain;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,8 +14,9 @@ import java.util.*;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
 public class AppUser implements UserDetails {
     @Id
     @SequenceGenerator(
@@ -31,6 +33,9 @@ public class AppUser implements UserDetails {
     @ElementCollection(fetch = FetchType.EAGER)
     private Collection<SimpleGrantedAuthority> grantedAuthorities = new HashSet<>();
 
+    @OneToMany(fetch = FetchType.EAGER,mappedBy="user")
+    private Set<Password> passwords = new LinkedHashSet<>();
+
     private boolean isAccountNonLocked;
     private boolean isEnabled;
 
@@ -44,6 +49,19 @@ public class AppUser implements UserDetails {
         this.email = email;
         this.password = password;
         this.grantedAuthorities = grantedAuthorities;
+    }
+
+    public AppUser(
+            String firstName,
+            String lastName,
+            String email,
+            String password, Collection<SimpleGrantedAuthority> grantedAuthorities,Boolean isEnabled) {
+        this.firstName = firstName;
+        LastName = lastName;
+        this.email = email;
+        this.password = password;
+        this.grantedAuthorities = grantedAuthorities;
+        this.isEnabled=isEnabled;
     }
 
     @Override

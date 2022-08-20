@@ -1,4 +1,4 @@
-package com.webapp.pwmanager.registration.domain;
+package com.webapp.pwmanager.registration.model;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;

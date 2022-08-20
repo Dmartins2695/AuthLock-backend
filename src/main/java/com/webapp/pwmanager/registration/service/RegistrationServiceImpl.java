@@ -7,8 +7,8 @@ import com.webapp.pwmanager.config.ConfigVariables;
 import com.webapp.pwmanager.email.Email;
 import com.webapp.pwmanager.email.EmailSender;
 import com.webapp.pwmanager.email.EmailValidator;
-import com.webapp.pwmanager.registration.domain.ConfirmationEmailDto;
-import com.webapp.pwmanager.registration.domain.RegistrationDto;
+import com.webapp.pwmanager.registration.model.ConfirmationEmailDto;
+import com.webapp.pwmanager.registration.model.RegistrationDto;
 import com.webapp.pwmanager.registration.token.ConfirmationToken;
 import com.webapp.pwmanager.registration.token.ConfirmationTokenService;
 import lombok.AllArgsConstructor;
@@ -16,8 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.annotation.Validated;
 
+import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,7 +34,7 @@ public class RegistrationServiceImpl implements RegistrationService {
     private final ConfigVariables configVariables;
 
 
-    public ResponseEntity<?> register(@Validated RegistrationDto request) {
+    public ResponseEntity<?> register(@Valid RegistrationDto request) {
         boolean isValidEmail = emailValidator.test(request.getEmail());
         if (!isValidEmail) {
             throw new IllegalStateException(String.format("Email %s not valid!", request.getEmail()));
@@ -76,7 +76,7 @@ public class RegistrationServiceImpl implements RegistrationService {
 
     }
 
-    public ResponseEntity<?> resendConfirmationEmail(@Validated ConfirmationEmailDto request) {
+    public ResponseEntity<?> resendConfirmationEmail(@Valid ConfirmationEmailDto request) {
         AppUser existentUser = appUserService.loadUserByUsername(request.getEmail());
         ConfirmationToken confirmToken = confirmationTokenService.getTokenByAppUserId(existentUser.getId())
                 .orElseThrow(() -> new UsernameNotFoundException("Token of user not found"));

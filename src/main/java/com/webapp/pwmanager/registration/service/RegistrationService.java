@@ -1,18 +1,18 @@
 package com.webapp.pwmanager.registration.service;
 
-import com.webapp.pwmanager.appUser.domain.AppUser;
-import com.webapp.pwmanager.registration.domain.ConfirmationEmailDto;
-import com.webapp.pwmanager.registration.domain.RegistrationDto;
+import com.webapp.pwmanager.registration.model.ConfirmationEmailDto;
+import com.webapp.pwmanager.registration.model.RegistrationDto;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
+
+import javax.validation.Valid;
 
 
 public interface RegistrationService {
 
 
-    ResponseEntity<?> register(@Validated RegistrationDto request);
+    ResponseEntity<?> register(@Valid RegistrationDto request);
 
-    ResponseEntity<?> resendConfirmationEmail(@Validated ConfirmationEmailDto request);
+    ResponseEntity<?> resendConfirmationEmail(@Valid ConfirmationEmailDto request);
 
     ResponseEntity<?> confirmToken(String token);
 }
