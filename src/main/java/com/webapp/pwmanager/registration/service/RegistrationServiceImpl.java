@@ -1,17 +1,20 @@
-package com.webapp.pwmanager.registration;
+package com.webapp.pwmanager.registration.service;
 
-import com.webapp.pwmanager.appUser.AppUser;
-import com.webapp.pwmanager.appUser.AppUserRole;
-import com.webapp.pwmanager.appUser.AppUserService;
+import com.webapp.pwmanager.appUser.domain.AppUser;
+import com.webapp.pwmanager.appUser.domain.AppUserRole;
+import com.webapp.pwmanager.appUser.service.AppUserService;
 import com.webapp.pwmanager.config.ConfigVariables;
 import com.webapp.pwmanager.email.Email;
 import com.webapp.pwmanager.email.EmailSender;
 import com.webapp.pwmanager.email.EmailValidator;
+import com.webapp.pwmanager.registration.domain.ConfirmationEmailDto;
+import com.webapp.pwmanager.registration.domain.RegistrationDto;
 import com.webapp.pwmanager.registration.token.ConfirmationToken;
 import com.webapp.pwmanager.registration.token.ConfirmationTokenService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -23,7 +26,7 @@ import java.util.UUID;
 
 @Service
 @AllArgsConstructor
-public class RegistrationService {
+public class RegistrationServiceImpl implements RegistrationService {
     private final EmailValidator emailValidator;
     private final AppUserService appUserService;
 
@@ -32,7 +35,7 @@ public class RegistrationService {
     private final ConfigVariables configVariables;
 
 
-    public ResponseEntity register(@Validated RegistrationDto request) {
+    public ResponseEntity<?> register(@Validated RegistrationDto request) {
         boolean isValidEmail = emailValidator.test(request.getEmail());
         if (!isValidEmail) {
             throw new IllegalStateException(String.format("Email %s not valid!", request.getEmail()));
@@ -47,7 +50,7 @@ public class RegistrationService {
                 HashMap<String, Object> result = new HashMap<>();
                 result.put("email", request.getEmail());
                 result.put("hasTokenToConfirm", true);
-                return new ResponseEntity(result, HttpStatus.OK);
+                return ResponseEntity.ok(result);
             }
             appUserService.removeAppUserNotConfirmed(existentUser.getEmail());
             throw new IllegalStateException(String.format("Email %s already exists!", existentUser.getEmail()));
@@ -70,20 +73,20 @@ public class RegistrationService {
 
         sendEmail(newUser, token);
 
-        return success ? new ResponseEntity(newUser, HttpStatus.OK) : new ResponseEntity(HttpStatus.NO_CONTENT);
+        return success ? ResponseEntity.ok(newUser) : ResponseEntity.noContent().build();
 
     }
 
-    public ResponseEntity resendConfirmationEmail(@Validated ConfirmationEmailDto request) {
+    public ResponseEntity<?> resendConfirmationEmail(@Validated ConfirmationEmailDto request) {
         AppUser existentUser = appUserService.loadUserByUsername(request.getEmail());
-        String token = confirmationTokenService.getTokenByAppUserId(existentUser.getId()).get().getToken();
+        ConfirmationToken confirmToken = confirmationTokenService.getTokenByAppUserId(existentUser.getId())
+                .orElseThrow(() -> new UsernameNotFoundException("Token of user not found"));
+        sendEmail(existentUser, confirmToken.getToken());
 
-        sendEmail(existentUser, token);
-
-        return new ResponseEntity(HttpStatus.OK);
+        return ResponseEntity.ok().build();
     }
 
-    private boolean sendEmail(AppUser user, String token) {
+    private void sendEmail(AppUser user, String token) {
         String link = configVariables.getConfirmLink() + token;
         Map<String, Object> properties = new HashMap<>();
         properties.put("email", user.getEmail());
@@ -93,11 +96,10 @@ public class RegistrationService {
         String template = "email-confirmation.html";
 
         emailSender.send(new Email(properties, user.getEmail(), configVariables.getEmailFrom(), subject, template));
-        return true;
     }
 
     @Transactional
-    public String confirmToken(String token) {
+    public ResponseEntity<?> confirmToken(String token) {
         ConfirmationToken confirmationToken = confirmationTokenService
                 .getToken(token)
                 .orElseThrow(() ->
@@ -116,6 +118,6 @@ public class RegistrationService {
         confirmationTokenService.setConfirmedAt(token);
         appUserService.enableAppUser(
                 confirmationToken.getAppUser().getEmail());
-        return "confirmed";
+        return ResponseEntity.ok(appUserService.loadUserByUsername(confirmationToken.getAppUser().getEmail()));
     }
 }

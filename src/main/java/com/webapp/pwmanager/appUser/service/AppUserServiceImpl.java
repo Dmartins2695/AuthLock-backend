@@ -1,20 +1,22 @@
-package com.webapp.pwmanager.appUser;
+package com.webapp.pwmanager.appUser.service;
 
+import com.webapp.pwmanager.appUser.domain.AppUser;
+import com.webapp.pwmanager.appUser.repository.AppUserRepository;
 import com.webapp.pwmanager.registration.token.ConfirmationToken;
 import com.webapp.pwmanager.registration.token.ConfirmationTokenService;
-import com.webapp.pwmanager.security.PasswordEncoder;
 import lombok.AllArgsConstructor;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import com.webapp.pwmanager.security.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
 @Service
 @AllArgsConstructor
-public class AppUserService implements UserDetailsService {
+public class AppUserServiceImpl implements AppUserService {
     private final AppUserRepository appUserRepository;
-    private final PasswordEncoder passwordEncoder;
+
+    private final PasswordEncoder bCryptPasswordEncoder;
     private final ConfirmationTokenService confirmationTokenService;
 
     @Override
@@ -25,7 +27,7 @@ public class AppUserService implements UserDetailsService {
 
     public boolean singUpUser(AppUser appUser, String token) {
 
-        String encodePassword = passwordEncoder.bCryptPasswordEncoder().encode(appUser.getPassword());
+        String encodePassword = bCryptPasswordEncoder.bCryptPasswordEncoder().encode(appUser.getPassword());
 
         appUser.setPassword(encodePassword);
 
@@ -43,8 +45,8 @@ public class AppUserService implements UserDetailsService {
         return true;
     }
 
-    public int enableAppUser(String email) {
-        return appUserRepository.enableAppUser(email);
+    public void enableAppUser(String email) {
+        appUserRepository.enableAppUser(email);
     }
 
     public boolean hasUser(String email) {

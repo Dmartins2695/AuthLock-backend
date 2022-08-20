@@ -1,4 +1,4 @@
-package com.webapp.pwmanager.registration;
+package com.webapp.pwmanager.registration.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -9,6 +9,9 @@ import lombok.ToString;
 @AllArgsConstructor
 @EqualsAndHashCode
 @ToString
-public class ConfirmationEmailDto {
+public class RegistrationDto {
     private final String email;
+    private final String password;
+    private final String firstName;
+    private final String lastName;
 }

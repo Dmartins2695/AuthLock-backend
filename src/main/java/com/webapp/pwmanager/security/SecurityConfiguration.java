@@ -1,22 +1,20 @@
 package com.webapp.pwmanager.security;
 
-import com.webapp.pwmanager.appUser.AppUserService;
-import lombok.AllArgsConstructor;
+import com.webapp.pwmanager.appUser.service.AppUserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.web.authentication.AuthenticationFilter;
 
 @Configuration
-@AllArgsConstructor
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfiguration {
 
     /**
@@ -38,12 +36,20 @@ public class SecurityConfiguration {
     private final AppUserService appUserService;
     private final PasswordEncoder passwordEncoder;
 
+    @Autowired
+    public SecurityConfiguration(PasswordEncoder passwordEncoder,
+                                 AppUserService appUserService) {
+        this.passwordEncoder = passwordEncoder;
+        this.appUserService = appUserService;
+    }
+
+
     @Bean
     protected SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         // Configure AuthenticationManagerBuilder
         AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
-        authenticationManagerBuilder.userDetailsService(appUserService).passwordEncoder(passwordEncoder.bCryptPasswordEncoder());
+        authenticationManagerBuilder.userDetailsService(appUserService).passwordEncoder(passwordEncoder);
 
         // Get AuthenticationManager
         AuthenticationManager authenticationManager = authenticationManagerBuilder.build();
