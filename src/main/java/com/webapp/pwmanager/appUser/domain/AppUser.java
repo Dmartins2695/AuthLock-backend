@@ -1,6 +1,5 @@
 package com.webapp.pwmanager.appUser.domain;
 
-import com.webapp.pwmanager.registration.token.ConfirmationToken;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -10,10 +9,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Getter
 @Setter
@@ -22,38 +18,37 @@ import java.util.Objects;
 public class AppUser implements UserDetails {
     @Id
     @SequenceGenerator(
-            name="app_user_sequence",
-            sequenceName="app_user_sequence",
+            name = "app_user_sequence",
+            sequenceName = "app_user_sequence",
             allocationSize = 1
     )
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "app_user_sequence" )
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "app_user_sequence")
     private Long id;
     private String firstName;
     private String LastName;
     private String email;
     private String password;
-    @Enumerated(EnumType.STRING)
-    private AppUserRole appUserRole;
+    @Transient
+    private Set<? extends GrantedAuthority> grantedAuthorities = new HashSet<>();
+
     private boolean isAccountNonLocked;
     private boolean isEnabled;
 
     public AppUser(
-                   String firstName,
-                   String lastName,
-                   String email,
-                   String password,
-                   AppUserRole appUserRole) {
+            String firstName,
+            String lastName,
+            String email,
+            String password, Set<SimpleGrantedAuthority> grantedAuthorities) {
         this.firstName = firstName;
         LastName = lastName;
         this.email = email;
         this.password = password;
-        this.appUserRole = appUserRole;
+        this.grantedAuthorities = grantedAuthorities;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        SimpleGrantedAuthority authority = new SimpleGrantedAuthority(appUserRole.name());
-        return Collections.singletonList(authority);
+        return grantedAuthorities;
     }
 
     @Override

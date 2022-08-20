@@ -12,7 +12,6 @@ import com.webapp.pwmanager.registration.domain.RegistrationDto;
 import com.webapp.pwmanager.registration.token.ConfirmationToken;
 import com.webapp.pwmanager.registration.token.ConfirmationTokenService;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -63,7 +62,7 @@ public class RegistrationServiceImpl implements RegistrationService {
                 request.getLastName(),
                 request.getEmail(),
                 request.getPassword(),
-                AppUserRole.USER
+                AppUserRole.ADMIN.getGrantedAuthorities()
         );
 
         boolean success = appUserService.singUpUser(newUser
