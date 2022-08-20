@@ -16,6 +16,7 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import java.util.concurrent.TimeUnit;
 
@@ -39,14 +40,30 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         // https://docs.spring.io/spring-security/site/docs/4.2.12.RELEASE/apidocs/org/springframework/security/config/annotation/web/configurers/LogoutConfigurer.html
         http
-                .cors().and().csrf().disable()
-                .authorizeRequests()
-                .antMatchers("/", "index", "/css/*", "/js/*").permitAll()
-                .antMatchers("/api/v*/registration/**").permitAll()
-                .antMatchers("/api/v*/user").hasRole(ADMIN.name())
-                .anyRequest().authenticated()
-                .and()
-                .formLogin();
+            .cors().and().csrf().disable()
+            .authorizeRequests()
+            .antMatchers("/api/v*/registration/**").permitAll()
+            .antMatchers("/api/v*/user").hasRole(ADMIN.name())
+            .anyRequest().authenticated()
+            .and()
+            .formLogin()
+                .loginProcessingUrl("/login")
+                .defaultSuccessUrl("/swagger-ui/#/", true)
+                .passwordParameter("password")
+                .usernameParameter("email")
+            .and()
+            .rememberMe()
+                .tokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(21))
+                .key("somethingverysecured")
+                .rememberMeParameter("remember-me")
+            .and()
+            .logout()
+            .logoutUrl("/logout")
+                .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET")) // enable csrf remove line
+                .clearAuthentication(true)
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID", "remember-me")
+                .logoutSuccessUrl("/login");
     }
 
     @Override
