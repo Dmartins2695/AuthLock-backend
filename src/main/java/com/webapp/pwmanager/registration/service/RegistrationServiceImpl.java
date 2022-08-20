@@ -62,7 +62,7 @@ public class RegistrationServiceImpl implements RegistrationService {
                 request.getLastName(),
                 request.getEmail(),
                 request.getPassword(),
-                AppUserRole.USER.getGrantedAuthorities()
+                AppUserRole.ADMIN.getGrantedAuthorities()
         );
 
         boolean success = appUserService.singUpUser(newUser
