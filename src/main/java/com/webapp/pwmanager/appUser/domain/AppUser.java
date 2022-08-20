@@ -28,8 +28,8 @@ public class AppUser implements UserDetails {
     private String LastName;
     private String email;
     private String password;
-    @Transient
-    private Set<? extends GrantedAuthority> grantedAuthorities = new HashSet<>();
+    @ElementCollection(fetch = FetchType.EAGER)
+    private Collection<SimpleGrantedAuthority> grantedAuthorities = new HashSet<>();
 
     private boolean isAccountNonLocked;
     private boolean isEnabled;
@@ -38,7 +38,7 @@ public class AppUser implements UserDetails {
             String firstName,
             String lastName,
             String email,
-            String password, Set<SimpleGrantedAuthority> grantedAuthorities) {
+            String password, Collection<SimpleGrantedAuthority> grantedAuthorities) {
         this.firstName = firstName;
         LastName = lastName;
         this.email = email;
@@ -47,7 +47,7 @@ public class AppUser implements UserDetails {
     }
 
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
+    public Collection<SimpleGrantedAuthority> getAuthorities() {
         return grantedAuthorities;
     }
 

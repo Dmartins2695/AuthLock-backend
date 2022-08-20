@@ -1,73 +1,66 @@
 package com.webapp.pwmanager.security;
 
 import com.webapp.pwmanager.appUser.service.AppUserService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.authentication.AuthenticationManager;
+
+import java.util.concurrent.TimeUnit;
+
+import static com.webapp.pwmanager.appUser.domain.AppUserRole.*;
+
 
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor
-public class SecurityConfiguration {
-
-    /**
-     * Prod Configuration with https
-     */
-   /* @Bean
-    protected SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-            .requiresChannel((channel) -> channel.anyRequest().requiresSecure())
-            .formLogin()
-            .and()
-            .authorizeRequests()
-            .anyRequest()
-            .authenticated();
-
-        return http.build();
-    }*/
+public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final AppUserService appUserService;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public SecurityConfiguration(PasswordEncoder passwordEncoder,
-                                 AppUserService appUserService) {
-        this.passwordEncoder = passwordEncoder;
+    public SecurityConfiguration(AppUserService appUserService, PasswordEncoder passwordEncoder) {
         this.appUserService = appUserService;
+        this.passwordEncoder = passwordEncoder;
     }
 
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        // https://docs.spring.io/spring-security/site/docs/4.2.12.RELEASE/apidocs/org/springframework/security/config/annotation/web/configurers/LogoutConfigurer.html
+        http
+                .cors().and().csrf().disable()
+                .authorizeRequests()
+                .antMatchers("/", "index", "/css/*", "/js/*").permitAll()
+                .antMatchers("/api/v*/registration/**").permitAll()
+                .antMatchers("/api/v*/user").hasRole(ADMIN.name())
+                .anyRequest().authenticated()
+                .and()
+                .formLogin();
+    }
+
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.authenticationProvider(daoAuthenticationProvider());
+    }
 
     @Bean
-    protected SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
-        // Configure AuthenticationManagerBuilder
-        AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
-        authenticationManagerBuilder.userDetailsService(appUserService).passwordEncoder(passwordEncoder);
-
-        // Get AuthenticationManager
-        AuthenticationManager authenticationManager = authenticationManagerBuilder.build();
-
-        http
-                .csrf().disable()
-                .authorizeRequests()
-                .antMatchers("/api/v*/registration/**")
-                .permitAll()
-                .and()
-                .formLogin()
-                .and()
-                .authorizeRequests()
-                .anyRequest()
-                .authenticated().and()
-                .authenticationManager(authenticationManager);
-
-        return http.build();
+    public DaoAuthenticationProvider daoAuthenticationProvider() {
+        DaoAuthenticationProvider provider =
+                new DaoAuthenticationProvider();
+        provider.setPasswordEncoder(passwordEncoder);
+        provider.setUserDetailsService(appUserService);
+        return provider;
     }
 
 }
