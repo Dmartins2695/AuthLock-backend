@@ -1,6 +1,11 @@
 package com.webapp.pwmanager.appUser.domain;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -18,6 +23,11 @@ import java.util.Date;
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "id")
 public class Password {
 
     @Id
@@ -52,8 +62,9 @@ public class Password {
     @Column
     private Boolean duplicated;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "user_passwords_id", nullable = false)
+    @JsonBackReference
     private AppUser user;
 
     @CreationTimestamp
@@ -64,4 +75,15 @@ public class Password {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    public Password(String value, String hash, String websiteUrl, Boolean weak, Boolean favorite, Boolean duplicated, AppUser user, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.value = value;
+        this.hash = hash;
+        this.websiteUrl = websiteUrl;
+        this.weak = weak;
+        this.favorite = favorite;
+        this.duplicated = duplicated;
+        this.user = user;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
 }

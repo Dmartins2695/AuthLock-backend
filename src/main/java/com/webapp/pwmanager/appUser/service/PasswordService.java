@@ -78,6 +78,9 @@ public class PasswordService {
         final AppUser user = passwordDTO.getUserId() == null ? null : appUserRepository.findById(passwordDTO.getUserId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));
         password.setUser(user);
+        assert user != null;
+        user.getPasswords().add(password);
+        appUserRepository.save(user);
         return password;
     }
 

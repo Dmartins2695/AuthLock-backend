@@ -5,7 +5,7 @@ spring:
     url: jdbc:postgresql://localhost:5432/pwmanager
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     properties:
         format_sql: true
     show-sql: true

@@ -13,12 +13,12 @@ import java.util.List;
 
 
 @RestController
-@RequestMapping(value = "/api/passwords", produces = MediaType.APPLICATION_JSON_VALUE)
-public class PasswordResource {
+@RequestMapping(value = "/api/v1/password", produces = MediaType.APPLICATION_JSON_VALUE)
+public class PasswordController {
 
     private final PasswordService passwordService;
 
-    public PasswordResource(final PasswordService passwordService) {
+    public PasswordController(final PasswordService passwordService) {
         this.passwordService = passwordService;
     }
 

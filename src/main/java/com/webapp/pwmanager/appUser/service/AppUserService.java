@@ -1,19 +1,88 @@
 package com.webapp.pwmanager.appUser.service;
 
 import com.webapp.pwmanager.appUser.domain.AppUser;
+import com.webapp.pwmanager.appUser.domain.Password;
+import com.webapp.pwmanager.appUser.repository.AppUserRepository;
+import com.webapp.pwmanager.appUser.repository.PasswordRepository;
+import com.webapp.pwmanager.registration.token.ConfirmationToken;
+import com.webapp.pwmanager.registration.token.ConfirmationTokenService;
+import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import com.webapp.pwmanager.security.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+@Service
+@AllArgsConstructor
+public class AppUserService implements UserDetailsService {
+    private final AppUserRepository appUserRepository;
+    private final PasswordRepository passwordRepository;
+
+    private final PasswordEncoder bCryptPasswordEncoder;
+    private final ConfirmationTokenService confirmationTokenService;
+
+    @Override
+    public AppUser loadUserByUsername(String email) throws UsernameNotFoundException {
+        return appUserRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException(String.format("User email '%s' not found!", email)));
+    }
+
+    public ResponseEntity<?> getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (!(authentication instanceof AnonymousAuthenticationToken)) {
+            String currentUserName = authentication.getName();
+            return ResponseEntity.ok(appUserRepository.findByEmail(currentUserName));
+        }
+        return ResponseEntity.noContent().build();
+    }
+
+    public ResponseEntity<?> getUserStoredPasswords(Long userId) {
+        AppUser user = appUserRepository.findById(userId).orElseThrow(() -> new UsernameNotFoundException(String.format("User email '%s' not found!", userId)));
+        Set<Password> allByUserId = user.getPasswords();
+
+        return allByUserId != null ? ResponseEntity.ok(allByUserId) : ResponseEntity.noContent().build();
+    }
 
 
-public interface AppUserService extends UserDetailsService {
+    public boolean singUpUser(AppUser appUser, String token) {
 
-    AppUser loadUserByUsername(String email) throws UsernameNotFoundException;
+        String encodePassword = bCryptPasswordEncoder.bCryptPasswordEncoder().encode(appUser.getPassword());
 
-    boolean singUpUser(AppUser appUser, String token);
+        appUser.setPassword(encodePassword);
 
-    void enableAppUser(String email);
+        appUserRepository.save(appUser);
 
-    boolean hasUser(String email);
+        ConfirmationToken confirmToken = new ConfirmationToken(
+                token,
+                LocalDateTime.now(),
+                LocalDateTime.now().plusMinutes(15),
+                appUser
+        );
 
-    void removeAppUserNotConfirmed(String email);
+        confirmationTokenService.saveConfirmationToken(confirmToken);
+
+        return true;
+    }
+
+    public void enableAppUser(String email) {
+        appUserRepository.enableAppUser(email);
+    }
+
+    public boolean hasUser(String email) {
+        return appUserRepository.findByEmail(email).isPresent();
+    }
+
+    public void removeAppUserNotConfirmed(String email) {
+        appUserRepository.removeAppUserByEmail(email);
+    }
 }
+

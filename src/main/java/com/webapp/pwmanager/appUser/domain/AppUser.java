@@ -1,5 +1,8 @@
 package com.webapp.pwmanager.appUser.domain;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,6 +20,9 @@ import java.util.*;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "id")
 public class AppUser implements UserDetails {
     @Id
     @SequenceGenerator(
@@ -34,6 +40,7 @@ public class AppUser implements UserDetails {
     private Collection<SimpleGrantedAuthority> grantedAuthorities = new HashSet<>();
 
     @OneToMany(fetch = FetchType.EAGER,mappedBy="user")
+    @JsonManagedReference
     private Set<Password> passwords = new LinkedHashSet<>();
 
     private boolean isAccountNonLocked;
