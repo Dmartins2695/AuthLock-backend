@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Set;
 
 
 @RestController
@@ -25,6 +26,25 @@ public class PasswordController {
     @GetMapping
     public ResponseEntity<List<PasswordDTO>> getAllPasswords() {
         return ResponseEntity.ok(passwordService.findAll());
+    }
+
+    @GetMapping("/weak")
+    public ResponseEntity<?> countWeakPasswords() {
+        return (ResponseEntity<?>) passwordService.countWeakPasswords();
+    }
+
+    @GetMapping("/outdated")
+    public ResponseEntity<?> countOutdatedPasswords() {
+        return (ResponseEntity<?>) passwordService.countOutdatedPasswords();
+    }
+    @GetMapping("/duplicated")
+    public ResponseEntity<?> countDuplicatedPasswords() {
+        return (ResponseEntity<?>) passwordService.countDuplicatedPasswords();
+    }
+
+    @GetMapping("/favorites")
+    public ResponseEntity<?> findAllFavoritePasswords() {
+        return (ResponseEntity<?>) passwordService.findAllFavoritePasswords();
     }
 
     @GetMapping("/{id}")

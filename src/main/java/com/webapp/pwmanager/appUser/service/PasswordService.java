@@ -6,11 +6,16 @@ import com.webapp.pwmanager.appUser.model.PasswordDTO;
 import com.webapp.pwmanager.appUser.repository.AppUserRepository;
 import com.webapp.pwmanager.appUser.repository.PasswordRepository;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Duration;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -84,4 +89,31 @@ public class PasswordService {
         return password;
     }
 
+    public Object countWeakPasswords() {
+        Long count =  passwordRepository.countAllByWeak(true);
+        return count != null ? ResponseEntity.ok(count) : ResponseEntity.noContent().build();
+    }
+
+    public Object countOutdatedPasswords() {
+        List<Password> allPasswords = passwordRepository.findAll();
+        Set<Object> validated = allPasswords.stream().map(this::outdatedValidator).filter(Objects::nonNull).collect(Collectors.toSet());
+        return ResponseEntity.ok(validated.size());
+    }
+
+    public Object countDuplicatedPasswords() {
+        //TODO: RETURNING WRONG VALUE
+        Long count = passwordRepository.countAllByDuplicated(true);
+        return count != null ? ResponseEntity.ok(count) : ResponseEntity.noContent().build();
+    }
+
+    public Object findAllFavoritePasswords() {
+        Set<Password> results = passwordRepository.findAllByFavorite(true);
+        return results != null ? ResponseEntity.ok(results) : ResponseEntity.noContent().build();
+    }
+
+    private Object outdatedValidator(Password password) {
+        Duration duration = Duration.between(password.getUpdatedAt(), password.getCreatedAt());
+        long diff = Math.abs(duration.toDays());
+        return diff < 60 ? password : null;
+    }
 }

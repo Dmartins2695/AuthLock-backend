@@ -7,4 +7,9 @@ import java.util.Set;
 
 
 public interface PasswordRepository extends JpaRepository<Password, Long> {
+    Long countAllByWeak(Boolean weak);
+
+    Long countAllByDuplicated(Boolean duplicated);
+
+    Set<Password> findAllByFavorite(Boolean favorite);
 }
