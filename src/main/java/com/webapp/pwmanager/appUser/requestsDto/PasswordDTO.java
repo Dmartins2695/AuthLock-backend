@@ -1,11 +1,10 @@
-package com.webapp.pwmanager.appUser.model;
+package com.webapp.pwmanager.appUser.requestsDto;
 
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.time.LocalDateTime;
 
 
 @Getter

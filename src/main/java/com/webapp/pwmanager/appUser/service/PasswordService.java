@@ -2,11 +2,10 @@ package com.webapp.pwmanager.appUser.service;
 
 import com.webapp.pwmanager.appUser.domain.AppUser;
 import com.webapp.pwmanager.appUser.domain.Password;
-import com.webapp.pwmanager.appUser.model.PasswordDTO;
+import com.webapp.pwmanager.appUser.requestsDto.PasswordDTO;
 import com.webapp.pwmanager.appUser.repository.AppUserRepository;
 import com.webapp.pwmanager.appUser.repository.PasswordRepository;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;

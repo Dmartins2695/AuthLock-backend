@@ -1,6 +1,6 @@
 package com.webapp.pwmanager.appUser.web;
 
-import com.webapp.pwmanager.appUser.model.PasswordDTO;
+import com.webapp.pwmanager.appUser.requestsDto.PasswordDTO;
 import com.webapp.pwmanager.appUser.service.PasswordService;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.http.HttpStatus;
@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Set;
 
 
 @RestController

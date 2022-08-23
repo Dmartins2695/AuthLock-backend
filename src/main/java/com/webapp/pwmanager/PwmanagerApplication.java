@@ -35,7 +35,7 @@ public class PwmanagerApplication {
         @Override
         public void run(String... args) throws Exception {
             Collection<SimpleGrantedAuthority> grantedAuthorities = new HashSet<>();
-            grantedAuthorities.add(new SimpleGrantedAuthority(AppUserRole.ADMIN.name()));
+            grantedAuthorities.add(new SimpleGrantedAuthority(AppUserRole.USER.name()));
             AppUser admin = new AppUser(
                     "daniel",
                     "martins",
