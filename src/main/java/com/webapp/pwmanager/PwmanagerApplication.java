@@ -34,18 +34,27 @@ public class PwmanagerApplication {
 
         @Override
         public void run(String... args) throws Exception {
-            Collection<SimpleGrantedAuthority> grantedAuthorities = new HashSet<>();
-            grantedAuthorities.add(new SimpleGrantedAuthority(AppUserRole.USER.name()));
+            Collection<SimpleGrantedAuthority> authorities = AppUserRole.ADMIN.getGrantedAuthorities();
+            Collection<SimpleGrantedAuthority> authorities2 = AppUserRole.USER.getGrantedAuthorities();
             AppUser admin = new AppUser(
                     "daniel",
                     "martins",
                     "daniel@gmail.com",
                     passwordEncoder.bCryptPasswordEncoder().encode("password"),
-                    grantedAuthorities,
+                    authorities,
+                    true
+            );
+            AppUser user = new AppUser(
+                    "daniel",
+                    "martins",
+                    "daniel1@gmail.com",
+                    passwordEncoder.bCryptPasswordEncoder().encode("password"),
+                    authorities2,
                     true
             );
 
             appUserRepository.save(admin);
+            appUserRepository.save(user);
 
             Password password = new Password(
                     "password",
@@ -69,11 +78,21 @@ public class PwmanagerApplication {
                     LocalDateTime.now(),
                     LocalDateTime.now()
             );
+            Password password3 = new Password(
+                    "password3",
+                    passwordEncoder.bCryptPasswordEncoder().encode("password2"),
+                    "http://localhost:8080/1",
+                    true,
+                    false,
+                    false,
+                    user,
+                    LocalDateTime.now(),
+                    LocalDateTime.now()
+            );
 
             passwordRepository.save(password);
             passwordRepository.save(password2);
-
-            admin.getPasswords().add(password);
+            passwordRepository.save(password3);
 
         }
     }

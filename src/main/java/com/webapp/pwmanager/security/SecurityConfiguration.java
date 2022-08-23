@@ -53,8 +53,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .and()
                 .authorizeRequests((request) ->
                         request.antMatchers( "/api/v*/auth/login", "/api/v*/registration/**").permitAll()
-                                .antMatchers("/api/v*/password").hasRole(ADMIN.name())
-                                .antMatchers("/api/v*/user").hasRole(ADMIN.name())
+                                .antMatchers("/api/v*/password").hasAuthority(ADMIN.name())
+                                .antMatchers("/api/v*/user").hasAuthority(ADMIN.name())
                                 .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JWTAuthenticationFilter(appUserService, jWTTokenHelper),

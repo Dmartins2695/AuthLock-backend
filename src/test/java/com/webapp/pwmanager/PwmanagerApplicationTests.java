@@ -73,12 +73,8 @@ class PwmanagerApplicationTests {
 
         Assert.isTrue(admin.getId() > 0,"User saved");
         Assert.isTrue(password.getId() > 0,"Password saved");
-
-        Set<Password> passwordList = passwordRepository.findByUserId(admin.getId());
-
         Set<Password> adminPasswords = admin.getPasswords();
         Assert.notEmpty(adminPasswords, "Not Empty");
-        Assert.notEmpty(passwordList, "Not Empty");
     }
 
 

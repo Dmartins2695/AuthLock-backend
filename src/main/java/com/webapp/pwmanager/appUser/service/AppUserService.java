@@ -7,6 +7,7 @@ import com.webapp.pwmanager.appUser.repository.PasswordRepository;
 import com.webapp.pwmanager.registration.token.ConfirmationToken;
 import com.webapp.pwmanager.registration.token.ConfirmationTokenService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -17,12 +18,11 @@ import com.webapp.pwmanager.security.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class AppUserService implements UserDetailsService {
     private final AppUserRepository appUserRepository;
     private final PasswordRepository passwordRepository;
@@ -48,7 +48,7 @@ public class AppUserService implements UserDetailsService {
     public ResponseEntity<?> getUserStoredPasswords(Long userId) {
         AppUser user = appUserRepository.findById(userId).orElseThrow(() -> new UsernameNotFoundException(String.format("User email '%s' not found!", userId)));
         Set<Password> allByUserId = user.getPasswords();
-
+        log.info(String.format("User has %s logged IN", user.getEmail()));
         return allByUserId != null ? ResponseEntity.ok(allByUserId) : ResponseEntity.noContent().build();
     }
 

@@ -21,6 +21,7 @@ import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -46,9 +47,13 @@ public class RegistrationServiceImpl implements RegistrationService {
             AppUser existentUser = appUserService.loadUserByUsername(request.getEmail());
             boolean hasTokenToConfirm = confirmationTokenService.tokenNotConfirmedButValid(existentUser.getId());
             if (hasTokenToConfirm) {
+                ConfirmationToken tokenByAppUserId = confirmationTokenService.getTokenByAppUserId(existentUser.getId())
+                        .orElseThrow(() -> new UsernameNotFoundException("User token not found!"));
                 HashMap<String, Object> result = new HashMap<>();
                 result.put("email", request.getEmail());
                 result.put("hasTokenToConfirm", true);
+                result.put("resentEmail", true);
+                sendEmail(existentUser,tokenByAppUserId.getToken());
                 return ResponseEntity.ok(result);
             }
             appUserService.removeAppUserNotConfirmed(existentUser.getEmail());
@@ -62,7 +67,7 @@ public class RegistrationServiceImpl implements RegistrationService {
                 request.getLastName(),
                 request.getEmail(),
                 request.getPassword(),
-                AppUserRole.ADMIN.getGrantedAuthorities()
+                AppUserRole.USER.getGrantedAuthorities()
         );
 
         boolean success = appUserService.singUpUser(newUser
