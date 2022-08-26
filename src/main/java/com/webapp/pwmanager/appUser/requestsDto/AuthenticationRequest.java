@@ -1,16 +1,17 @@
 package com.webapp.pwmanager.appUser.requestsDto;
 
+import com.google.gson.annotations.SerializedName;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+
+@Getter
+@AllArgsConstructor
 public class AuthenticationRequest {
-	
-	private String userName;
-	private String password;
-	public String getUserName() {
-		return userName;
-	}
-	
-	public String getPassword() {
-		return password;
-	}
-	
+
+    @SerializedName("remember-me")
+    String rememberMe;
+    private String userName;
+    private String password;
 
 }
