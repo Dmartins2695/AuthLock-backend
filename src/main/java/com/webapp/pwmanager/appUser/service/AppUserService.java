@@ -81,5 +81,9 @@ public class AppUserService implements UserDetailsService {
         log.info(String.format("User has %s logged IN", user.getEmail()));
         return allByUserId != null ? ResponseEntity.ok(allByUserId) : ResponseEntity.noContent().build();
     }
+
+    public void saveUserState(AppUser user) {
+        appUserRepository.save(user);
+    }
 }
 
