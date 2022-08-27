@@ -2,8 +2,11 @@ package com.webapp.pwmanager.appUser.web;
 
 import com.webapp.pwmanager.appUser.domain.AppUser;
 import com.webapp.pwmanager.appUser.requestsDto.AuthenticationRequest;
+import com.webapp.pwmanager.appUser.requestsDto.LogoutRequest;
+import com.webapp.pwmanager.appUser.requestsDto.TokenRefreshRequest;
 import com.webapp.pwmanager.appUser.responseDto.LoginResponse;
 import com.webapp.pwmanager.appUser.responseDto.UserInfo;
+import com.webapp.pwmanager.appUser.service.RefreshTokenService;
 import com.webapp.pwmanager.security.jwt.JWTTokenHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +16,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -34,25 +38,33 @@ public class AuthController {
     private AuthenticationManager authenticationManager;
     @Autowired
     private UserDetailsService userDetailsService;
+    @Autowired
+    private RefreshTokenService refreshTokenService;
 
     @PostMapping("/auth/login")
     public ResponseEntity<?> login(@Valid @RequestBody AuthenticationRequest authenticationRequest) throws InvalidKeySpecException, NoSuchAlgorithmException {
 
-        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(authenticationRequest.getUserName(), authenticationRequest.getPassword());
+        if (!SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
+            UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(authenticationRequest.getUserName(), authenticationRequest.getPassword());
 
-        final Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
+            final Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+            AppUser user = (AppUser) authentication.getPrincipal();
 
-        AppUser user = (AppUser) authentication.getPrincipal();
-        String jwtToken = jWTTokenHelper.generateToken(user.getUsername());
+            String accessToken = jWTTokenHelper.generateToken(user.getUsername());
+            String refreshToken = refreshTokenService.createRefreshToken(user);
 
-        LoginResponse response = new LoginResponse();
-        response.setToken(jwtToken);
-        response.setRoles(Arrays.stream(user.getGrantedAuthorities().stream().toArray()).map(r -> r.toString()).collect(Collectors.toList()));
 
-        log.info(String.format("User has %s logged IN", user.getEmail()));
-        return ResponseEntity.ok(response);
+            LoginResponse response = new LoginResponse();
+            response.setAccessToken(accessToken);
+            response.setRefreshToken(refreshToken);
+            response.setRoles(Arrays.stream(user.getGrantedAuthorities().stream().toArray()).map(r -> r.toString()).collect(Collectors.toList()));
+
+            log.info(String.format("User has %s logged IN", user.getEmail()));
+            return ResponseEntity.ok(response);
+        }
+        return ResponseEntity.badRequest().body("User already logged in");
     }
 
     @GetMapping("/auth/userinfo")
@@ -69,5 +81,16 @@ public class AuthController {
         return ResponseEntity.ok(userInfo);
 
 
+    }
+
+    @PostMapping("/auth/refresh-token")
+    public ResponseEntity<?> refreshToken(@Valid @RequestBody TokenRefreshRequest request) throws InvalidKeySpecException, NoSuchAlgorithmException {
+        return refreshTokenService.validateRefreshToken(request);
+    }
+
+    @PostMapping("/auth/logout")
+    @Transactional
+    public ResponseEntity<?> logout(@Valid @RequestBody LogoutRequest request) {
+        return refreshTokenService.deleteRefreshTokenByUserName(request);
     }
 }

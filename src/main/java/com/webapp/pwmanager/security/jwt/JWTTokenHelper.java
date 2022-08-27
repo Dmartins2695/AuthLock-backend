@@ -1,5 +1,7 @@
 package com.webapp.pwmanager.security.jwt;
 
+import com.webapp.pwmanager.appUser.domain.AppUser;
+import com.webapp.pwmanager.appUser.domain.RefreshToken;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,6 +14,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class JWTTokenHelper {
@@ -22,6 +26,12 @@ public class JWTTokenHelper {
 	
 	@Value("${jwt.auth.secret_key}")
 	private String secretKey;
+
+	@Value("${jwt.auth.refresh_secret_key}")
+	private String refreshKey;
+
+	@Value("${jwt.auth.refresh_expires_in}")
+	private int refreshExpiresIn;
 	
 	@Value("${jwt.auth.expires_in}")
     private int expiresIn;
@@ -43,6 +53,19 @@ public class JWTTokenHelper {
         return claims;
     }
 
+	private Claims getAllClaimsFromRefreshToken(String token) {
+		Claims claims;
+		try {
+			claims = Jwts.parser()
+					.setSigningKey(refreshKey)
+					.parseClaimsJws(token)
+					.getBody();
+		} catch (Exception e) {
+			claims = null;
+		}
+		return claims;
+	}
+
 	
 	 public String getUsernameFromToken(String token) {
 	        String username;
@@ -54,6 +77,19 @@ public class JWTTokenHelper {
 	        }
 	        return username;
 	 }
+
+	public String getUsernameFromRefreshToken(String token) {
+		String username;
+		try {
+			final Claims claims = this.getAllClaimsFromRefreshToken(token);
+			username = claims.getSubject();
+		} catch (Exception e) {
+			username = null;
+		}
+		return username;
+	}
+
+
 	 
 	 public String generateToken(String username) throws InvalidKeySpecException, NoSuchAlgorithmException {
 	        
@@ -65,10 +101,27 @@ public class JWTTokenHelper {
 	                .signWith( SIGNATURE_ALGORITHM, secretKey )
 	                .compact();
 	  }
+
+	public String generateRefreshToken(AppUser user, RefreshToken newRefreshToken) {
+		Map<String,Object> claims = new HashMap<>();
+		claims.put("tokenId", newRefreshToken.getId());
+		return Jwts.builder()
+				.setIssuer( appName )
+				.setSubject(user.getEmail())
+				.addClaims(claims)
+				.setIssuedAt(new Date())
+				.setExpiration(generateRefreshExpirationDate())
+				.signWith( SIGNATURE_ALGORITHM, refreshKey )
+				.compact();
+	}
 	 
 	 private Date generateExpirationDate() {
 		 return new Date(System.currentTimeMillis() + (long) expiresIn * 60 * 1000);
 	 }
+	private Date generateRefreshExpirationDate() {
+		return new Date(System.currentTimeMillis() + (long) refreshExpiresIn * 60 * 1000);
+	}
+
 	 
 	 public Boolean validateToken(String token, UserDetails userDetails) {
 	        final String username = getUsernameFromToken(token);
@@ -78,12 +131,47 @@ public class JWTTokenHelper {
 	                        !isTokenExpired(token)
 	        );
 	  }
-	 
-	 public boolean isTokenExpired(String token) {
+
+	public Boolean validateRefreshToken(String token, AppUser userDetails) {
+		final String username = getUsernameFromRefreshToken(token);
+		return (
+				username != null
+						&& username.equals(userDetails.getEmail())
+						&& !isRefreshTokenExpired(token)
+		);
+	}
+
+	public Object getRefreshTokenClaim(String token) {
+		Object claim;
+		try {
+			final Claims claims = this.getAllClaimsFromRefreshToken(token);
+			claim = claims.get("tokenId");
+		} catch (Exception e) {
+			claim = null;
+		}
+		return claim;
+	}
+
+	public boolean isTokenExpired(String token) {
 		Date expireDate=getExpirationDate(token);
 		return expireDate.before(new Date());
 	}
 
+	public boolean isRefreshTokenExpired(String token) {
+		Date expireDate=getRefreshExpirationDate(token);
+		return expireDate.before(new Date());
+	}
+
+	private Date getRefreshExpirationDate(String token) {
+		Date expireDate;
+		try {
+			final Claims claims = this.getAllClaimsFromRefreshToken(token);
+			expireDate = claims.getExpiration();
+		} catch (Exception e) {
+			expireDate = null;
+		}
+		return expireDate;
+	}
 
 	private Date getExpirationDate(String token) {
 		 Date expireDate;

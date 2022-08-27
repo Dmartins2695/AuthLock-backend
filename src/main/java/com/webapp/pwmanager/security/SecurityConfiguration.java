@@ -52,7 +52,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .authenticationEntryPoint(authenticationEntryPoint)
                 .and()
                 .authorizeRequests((request) ->
-                        request.antMatchers( "/api/v*/auth/login", "/api/v*/registration/**").permitAll()
+                        request.antMatchers( "/api/v*/auth/login", "/api/v*/registration/**","/api/v*/auth/refresh-token").permitAll()
                                 .antMatchers("/api/v*/password/**").hasRole(ADMIN.name())
                                 .antMatchers("/api/v*/user/**").hasRole(ADMIN.name())
                                 .anyRequest().authenticated()
