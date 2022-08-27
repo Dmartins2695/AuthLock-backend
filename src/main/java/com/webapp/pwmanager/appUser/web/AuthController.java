@@ -44,28 +44,26 @@ public class AuthController {
     @PostMapping("/auth/login")
     public ResponseEntity<?> login(@Valid @RequestBody AuthenticationRequest authenticationRequest) throws InvalidKeySpecException, NoSuchAlgorithmException {
 
-        if (!SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
-            UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(authenticationRequest.getUserName(), authenticationRequest.getPassword());
+        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(authenticationRequest.getUserName(), authenticationRequest.getPassword());
 
-            final Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        final Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            AppUser user = (AppUser) authentication.getPrincipal();
+        AppUser user = (AppUser) authentication.getPrincipal();
 
-            String accessToken = jWTTokenHelper.generateToken(user.getUsername());
-            String refreshToken = refreshTokenService.createRefreshToken(user);
+        String accessToken = jWTTokenHelper.generateToken(user.getUsername());
+        String refreshToken = refreshTokenService.createRefreshToken(user);
 
 
-            LoginResponse response = new LoginResponse();
-            response.setAccessToken(accessToken);
-            response.setRefreshToken(refreshToken);
-            response.setRoles(Arrays.stream(user.getGrantedAuthorities().stream().toArray()).map(r -> r.toString()).collect(Collectors.toList()));
+        LoginResponse response = new LoginResponse();
+        response.setAccessToken(accessToken);
+        response.setRefreshToken(refreshToken);
+        response.setRoles(Arrays.stream(user.getGrantedAuthorities().stream().toArray()).map(r -> r.toString()).collect(Collectors.toList()));
 
-            log.info(String.format("User has %s logged IN", user.getEmail()));
-            return ResponseEntity.ok(response);
-        }
-        return ResponseEntity.badRequest().body("User already logged in");
+        log.info(String.format("User has %s logged IN", user.getEmail()));
+        return ResponseEntity.ok(response);
     }
+
 
     @GetMapping("/auth/userinfo")
     public ResponseEntity<?> getUserInfo(Principal user) {

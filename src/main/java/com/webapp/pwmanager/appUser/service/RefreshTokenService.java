@@ -11,6 +11,7 @@ import com.webapp.pwmanager.security.jwt.JWTTokenHelper;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
@@ -25,8 +26,12 @@ public class RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
 
     private final JWTTokenHelper jWTTokenHelper;
-
+    @Transactional
     public String createRefreshToken(AppUser user) {
+        boolean exists = refreshTokenRepository.existsByUser(user);
+        if(exists){
+            refreshTokenRepository.deleteByUser(user);
+        }
         RefreshToken newRefreshToken = new RefreshToken(user);
         refreshTokenRepository.save(newRefreshToken);
 
