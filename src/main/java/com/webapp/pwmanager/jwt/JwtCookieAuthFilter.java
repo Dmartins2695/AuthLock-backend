@@ -1,9 +1,8 @@
 package com.webapp.pwmanager.jwt;
 
-import com.webapp.pwmanager.appUser.service.AppUserService;
-import com.webapp.pwmanager.appUser.service.TokenProvider;
+import com.webapp.pwmanager.service.AppUserService;
+import com.webapp.pwmanager.service.TokenProvider;
 import com.webapp.pwmanager.util.SecurityCipher;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;

@@ -1,10 +1,10 @@
 package com.webapp.pwmanager;
 
-import com.webapp.pwmanager.appUser.domain.AppUser;
-import com.webapp.pwmanager.appUser.domain.AppUserRole;
-import com.webapp.pwmanager.appUser.domain.Password;
-import com.webapp.pwmanager.appUser.repository.AppUserRepository;
-import com.webapp.pwmanager.appUser.repository.PasswordRepository;
+import com.webapp.pwmanager.domain.AppUser;
+import com.webapp.pwmanager.domain.AppUserRole;
+import com.webapp.pwmanager.domain.Password;
+import com.webapp.pwmanager.repository.AppUserRepository;
+import com.webapp.pwmanager.repository.PasswordRepository;
 import com.webapp.pwmanager.security.PasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
-import java.util.HashSet;
 
 @SpringBootApplication
 public class PwmanagerApplication {

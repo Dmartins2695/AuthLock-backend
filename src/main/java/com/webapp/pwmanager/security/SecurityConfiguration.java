@@ -1,8 +1,8 @@
 package com.webapp.pwmanager.security;
 
-import com.webapp.pwmanager.appUser.service.AppUserService;
+import com.webapp.pwmanager.service.AppUserService;
 import com.webapp.pwmanager.jwt.JWTAuthenticationFilter;
-import com.webapp.pwmanager.jwt.JWTTokenHelper;
+import com.webapp.pwmanager.util.JWTTokenHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,7 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import static com.webapp.pwmanager.appUser.domain.AppUserRole.ADMIN;
+import static com.webapp.pwmanager.domain.AppUserRole.ADMIN;
 
 
 @Configuration
