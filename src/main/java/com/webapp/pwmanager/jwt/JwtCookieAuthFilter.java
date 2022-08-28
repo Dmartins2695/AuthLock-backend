@@ -1,7 +1,7 @@
 package com.webapp.pwmanager.jwt;
 
 import com.webapp.pwmanager.service.AppUserService;
-import com.webapp.pwmanager.service.TokenProvider;
+import com.webapp.pwmanager.service.TokenProviderService;
 import com.webapp.pwmanager.util.SecurityCipher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,7 +25,7 @@ public class JwtCookieAuthFilter  extends OncePerRequestFilter {
     @Value("${jwt.auth.refresh_token_cookie_name}")
     private String refreshTokenCookieName;
 
-    private TokenProvider tokenProvider;
+    private TokenProviderService tokenProviderService;
 
     private AppUserService appUserService;
 
@@ -33,8 +33,8 @@ public class JwtCookieAuthFilter  extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
         try {
             String jwt = getJwtToken(httpServletRequest, true);
-            if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
-                String username = tokenProvider.getUsernameFromToken(jwt);
+            if (StringUtils.hasText(jwt) && tokenProviderService.validateToken(jwt)) {
+                String username = tokenProviderService.getUsernameFromToken(jwt);
                 UserDetails userDetails = appUserService.loadUserByUsername(username);
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));
