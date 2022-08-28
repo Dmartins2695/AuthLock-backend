@@ -1,4 +1,4 @@
-package com.webapp.pwmanager.security.jwt;
+package com.webapp.pwmanager.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;

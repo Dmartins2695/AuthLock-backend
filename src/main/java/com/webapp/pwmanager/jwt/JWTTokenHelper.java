@@ -1,4 +1,4 @@
-package com.webapp.pwmanager.security.jwt;
+package com.webapp.pwmanager.jwt;
 
 import com.webapp.pwmanager.appUser.domain.AppUser;
 import com.webapp.pwmanager.appUser.domain.RefreshToken;
@@ -107,11 +107,11 @@ public class JWTTokenHelper {
                 .compact();
     }
 
-    private Date generateExpirationDate() {
+    public Date generateExpirationDate() {
         return new Date(System.currentTimeMillis() + (long) expiresIn * 1000);
     }
 
-    private Date generateRefreshExpirationDate() {
+    public Date generateRefreshExpirationDate() {
         return new Date(System.currentTimeMillis() + (long) refreshExpiresIn * 1000);
     }
 

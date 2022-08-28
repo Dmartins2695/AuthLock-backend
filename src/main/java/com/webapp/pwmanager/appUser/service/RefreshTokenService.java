@@ -7,7 +7,7 @@ import com.webapp.pwmanager.appUser.requestsDto.LogoutRequest;
 import com.webapp.pwmanager.appUser.requestsDto.TokenRefreshRequest;
 import com.webapp.pwmanager.appUser.responseDto.TokenRefreshResponse;
 import com.webapp.pwmanager.exception.TokenRefreshException;
-import com.webapp.pwmanager.security.jwt.JWTTokenHelper;
+import com.webapp.pwmanager.jwt.JWTTokenHelper;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;

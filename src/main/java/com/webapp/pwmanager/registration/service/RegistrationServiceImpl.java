@@ -3,7 +3,6 @@ package com.webapp.pwmanager.registration.service;
 import com.webapp.pwmanager.appUser.domain.AppUser;
 import com.webapp.pwmanager.appUser.domain.AppUserRole;
 import com.webapp.pwmanager.appUser.service.AppUserService;
-import com.webapp.pwmanager.config.ConfigVariables;
 import com.webapp.pwmanager.email.Email;
 import com.webapp.pwmanager.email.EmailSender;
 import com.webapp.pwmanager.email.EmailValidator;
@@ -12,6 +11,7 @@ import com.webapp.pwmanager.registration.model.RegistrationDto;
 import com.webapp.pwmanager.registration.token.ConfirmationToken;
 import com.webapp.pwmanager.registration.token.ConfirmationTokenService;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -21,19 +21,26 @@ import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
-@AllArgsConstructor
 public class RegistrationServiceImpl implements RegistrationService {
     private final EmailValidator emailValidator;
     private final AppUserService appUserService;
 
     private final ConfirmationTokenService confirmationTokenService;
     private final EmailSender emailSender;
-    private final ConfigVariables configVariables;
+    @Value("${email.email_from}")
+    private String emailFrom;
+    @Value("${email.confirm_link}")
+    private String confirmLink;
 
+    public RegistrationServiceImpl(EmailValidator emailValidator, AppUserService appUserService, ConfirmationTokenService confirmationTokenService, EmailSender emailSender) {
+        this.emailValidator = emailValidator;
+        this.appUserService = appUserService;
+        this.confirmationTokenService = confirmationTokenService;
+        this.emailSender = emailSender;
+    }
 
     public ResponseEntity<?> register(@Valid RegistrationDto request) {
         boolean isValidEmail = emailValidator.test(request.getEmail());
@@ -53,7 +60,7 @@ public class RegistrationServiceImpl implements RegistrationService {
                 result.put("email", request.getEmail());
                 result.put("hasTokenToConfirm", true);
                 result.put("resentEmail", true);
-                sendEmail(existentUser,tokenByAppUserId.getToken());
+                sendEmail(existentUser, tokenByAppUserId.getToken());
                 return ResponseEntity.ok(result);
             }
             appUserService.removeAppUserNotConfirmed(existentUser.getEmail());
@@ -91,7 +98,7 @@ public class RegistrationServiceImpl implements RegistrationService {
     }
 
     private void sendEmail(AppUser user, String token) {
-        String link = configVariables.getConfirmLink() + token;
+        String link = confirmLink + token;
         Map<String, Object> properties = new HashMap<>();
         properties.put("email", user.getEmail());
         properties.put("name", String.format(user.getFirstName() + " " + user.getLastName()));
@@ -99,7 +106,7 @@ public class RegistrationServiceImpl implements RegistrationService {
         String subject = "Confirm your email";
         String template = "email-confirmation.html";
 
-        emailSender.send(new Email(properties, user.getEmail(), configVariables.getEmailFrom(), subject, template));
+        emailSender.send(new Email(properties, user.getEmail(), emailFrom, subject, template));
     }
 
     @Transactional

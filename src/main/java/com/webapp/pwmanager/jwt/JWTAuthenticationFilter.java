@@ -1,4 +1,4 @@
-package com.webapp.pwmanager.security.jwt;
+package com.webapp.pwmanager.jwt;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;

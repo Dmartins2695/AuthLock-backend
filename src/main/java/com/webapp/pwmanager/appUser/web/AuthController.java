@@ -5,11 +5,18 @@ import com.webapp.pwmanager.appUser.requestsDto.AuthenticationRequest;
 import com.webapp.pwmanager.appUser.requestsDto.LogoutRequest;
 import com.webapp.pwmanager.appUser.requestsDto.TokenRefreshRequest;
 import com.webapp.pwmanager.appUser.responseDto.LoginResponse;
+import com.webapp.pwmanager.appUser.responseDto.Token;
 import com.webapp.pwmanager.appUser.responseDto.UserInfo;
+import com.webapp.pwmanager.appUser.service.AppUserService;
 import com.webapp.pwmanager.appUser.service.RefreshTokenService;
-import com.webapp.pwmanager.security.jwt.JWTTokenHelper;
+import com.webapp.pwmanager.appUser.service.TokenProvider;
+import com.webapp.pwmanager.jwt.JWTTokenHelper;
+import com.webapp.pwmanager.util.CookieUtil;
+import com.webapp.pwmanager.util.SecurityCipher;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -29,7 +36,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1")
-@CrossOrigin
+@CrossOrigin(origins = "http://localhost:3000", maxAge = 3600, methods = {RequestMethod.GET, RequestMethod.POST},allowCredentials = "true")
 @Slf4j
 public class AuthController {
     @Autowired
@@ -38,12 +45,19 @@ public class AuthController {
     private AuthenticationManager authenticationManager;
     @Autowired
     private UserDetailsService userDetailsService;
+
+    private AppUserService appUserService;
     @Autowired
     private RefreshTokenService refreshTokenService;
 
+    @Autowired
+    private TokenProvider tokenProvider;
+
+    @Autowired
+    private CookieUtil cookieUtil;
+
     @PostMapping("/auth/login")
     public ResponseEntity<?> login(@Valid @RequestBody AuthenticationRequest authenticationRequest) throws InvalidKeySpecException, NoSuchAlgorithmException {
-
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(authenticationRequest.getUserName(), authenticationRequest.getPassword());
 
         final Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
@@ -51,17 +65,27 @@ public class AuthController {
 
         AppUser user = (AppUser) authentication.getPrincipal();
 
-        String accessToken = jWTTokenHelper.generateToken(user.getUsername());
+        /*String accessToken = jWTTokenHelper.generateToken(user.getUsername());
         String refreshToken = refreshTokenService.createRefreshToken(user);
 
 
         LoginResponse response = new LoginResponse();
         response.setAccessToken(accessToken);
         response.setRefreshToken(refreshToken);
+        response.setRoles(Arrays.stream(user.getGrantedAuthorities().toArray()).map(Object::toString).collect(Collectors.toList()));*/
+        HttpHeaders responseHeaders = new HttpHeaders();
+        Token newAccessToken = tokenProvider.generateAccessToken(user.getUsername());
+        Token newRefreshToken = tokenProvider.generateRefreshToken(user);
+        addAccessTokenCookie(responseHeaders, newAccessToken);
+        addRefreshTokenCookie(responseHeaders, newRefreshToken);
+        LoginResponse response = new LoginResponse();
+        response.setAccessToken("null");
+        response.setRefreshToken("null");
         response.setRoles(Arrays.stream(user.getGrantedAuthorities().toArray()).map(Object::toString).collect(Collectors.toList()));
 
         log.info(String.format("User has %s logged IN", user.getEmail()));
-        return ResponseEntity.ok(response);
+        log.info(String.format("Refresh Token '%s' logged IN", newRefreshToken.getTokenValue()));
+        return ResponseEntity.ok().headers(responseHeaders).body(response);
     }
 
 
@@ -90,5 +114,13 @@ public class AuthController {
     @Transactional
     public ResponseEntity<?> logout(@Valid @RequestBody LogoutRequest request) {
         return refreshTokenService.deleteRefreshTokenByUserName(request);
+    }
+
+    private void addAccessTokenCookie(HttpHeaders httpHeaders, Token token) {
+        httpHeaders.add(HttpHeaders.SET_COOKIE, cookieUtil.createAccessTokenCookie(token.getTokenValue(), token.getDuration()).toString());
+    }
+
+    private void addRefreshTokenCookie(HttpHeaders httpHeaders, Token token) {
+        httpHeaders.add(HttpHeaders.SET_COOKIE, cookieUtil.createRefreshTokenCookie(token.getTokenValue(), token.getDuration()).toString());
     }
 }
