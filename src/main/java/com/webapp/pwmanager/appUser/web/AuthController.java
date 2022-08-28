@@ -58,7 +58,7 @@ public class AuthController {
         LoginResponse response = new LoginResponse();
         response.setAccessToken(accessToken);
         response.setRefreshToken(refreshToken);
-        response.setRoles(Arrays.stream(user.getGrantedAuthorities().stream().toArray()).map(r -> r.toString()).collect(Collectors.toList()));
+        response.setRoles(Arrays.stream(user.getGrantedAuthorities().toArray()).map(Object::toString).collect(Collectors.toList()));
 
         log.info(String.format("User has %s logged IN", user.getEmail()));
         return ResponseEntity.ok(response);

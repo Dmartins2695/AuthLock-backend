@@ -19,28 +19,21 @@ import java.util.Map;
 
 @Component
 public class JWTTokenHelper {
-	
-	
-	@Value("${jwt.auth.app}")
-	private String appName;
-	
-	@Value("${jwt.auth.secret_key}")
-	private String secretKey;
 
-	@Value("${jwt.auth.refresh_secret_key}")
-	private String refreshKey;
 
-	@Value("${jwt.auth.refresh_expires_in}")
-	private int refreshExpiresIn;
-	
-	@Value("${jwt.auth.expires_in}")
+    private final SignatureAlgorithm SIGNATURE_ALGORITHM = SignatureAlgorithm.HS512;
+    @Value("${jwt.auth.app}")
+    private String appName;
+    @Value("${jwt.auth.secret_key}")
+    private String secretKey;
+    @Value("${jwt.auth.refresh_secret_key}")
+    private String refreshKey;
+    @Value("${jwt.auth.refresh_expires_in}")
+    private int refreshExpiresIn;
+    @Value("${jwt.auth.expires_in}")
     private int expiresIn;
-	
-	private final SignatureAlgorithm SIGNATURE_ALGORITHM = SignatureAlgorithm.HS512;
 
-
-	
-	private Claims getAllClaimsFromToken(String token) {
+    private Claims getAllClaimsFromToken(String token) {
         Claims claims;
         try {
             claims = Jwts.parser()
@@ -53,160 +46,159 @@ public class JWTTokenHelper {
         return claims;
     }
 
-	private Claims getAllClaimsFromRefreshToken(String token) {
-		Claims claims;
-		try {
-			claims = Jwts.parser()
-					.setSigningKey(refreshKey)
-					.parseClaimsJws(token)
-					.getBody();
-		} catch (Exception e) {
-			claims = null;
-		}
-		return claims;
-	}
-
-	
-	 public String getUsernameFromToken(String token) {
-	        String username;
-	        try {
-	            final Claims claims = this.getAllClaimsFromToken(token);
-	            username = claims.getSubject();
-	        } catch (Exception e) {
-	            username = null;
-	        }
-	        return username;
-	 }
-
-	public String getUsernameFromRefreshToken(String token) {
-		String username;
-		try {
-			final Claims claims = this.getAllClaimsFromRefreshToken(token);
-			username = claims.getSubject();
-		} catch (Exception e) {
-			username = null;
-		}
-		return username;
-	}
+    private Claims getAllClaimsFromRefreshToken(String token) {
+        Claims claims;
+        try {
+            claims = Jwts.parser()
+                    .setSigningKey(refreshKey)
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (Exception e) {
+            claims = null;
+        }
+        return claims;
+    }
 
 
-	 
-	 public String generateToken(String username) throws InvalidKeySpecException, NoSuchAlgorithmException {
-	        
-	        return Jwts.builder()
-	                .setIssuer( appName )
-	                .setSubject(username)
-	                .setIssuedAt(new Date())
-	                .setExpiration(generateExpirationDate())
-	                .signWith( SIGNATURE_ALGORITHM, secretKey )
-	                .compact();
-	  }
+    public String getUsernameFromToken(String token) {
+        String username;
+        try {
+            final Claims claims = this.getAllClaimsFromToken(token);
+            username = claims.getSubject();
+        } catch (Exception e) {
+            username = null;
+        }
+        return username;
+    }
 
-	public String generateRefreshToken(AppUser user, RefreshToken newRefreshToken) {
-		Map<String,Object> claims = new HashMap<>();
-		claims.put("tokenId", newRefreshToken.getId());
-		return Jwts.builder()
-				.setIssuer( appName )
-				.setSubject(user.getEmail())
-				.addClaims(claims)
-				.setIssuedAt(new Date())
-				.setExpiration(generateRefreshExpirationDate())
-				.signWith( SIGNATURE_ALGORITHM, refreshKey )
-				.compact();
-	}
-	 
-	 private Date generateExpirationDate() {
-		 return new Date(System.currentTimeMillis() + (long) expiresIn * 60 * 1000);
-	 }
-	private Date generateRefreshExpirationDate() {
-		return new Date(System.currentTimeMillis() + (long) refreshExpiresIn * 60 * 1000);
-	}
-
-	 
-	 public Boolean validateToken(String token, UserDetails userDetails) {
-	        final String username = getUsernameFromToken(token);
-	        return (
-	                username != null &&
-	                username.equals(userDetails.getUsername()) &&
-	                        !isTokenExpired(token)
-	        );
-	  }
-
-	public Boolean validateRefreshToken(String token, AppUser userDetails) {
-		final String username = getUsernameFromRefreshToken(token);
-		return (
-				username != null
-						&& username.equals(userDetails.getEmail())
-						&& !isRefreshTokenExpired(token)
-		);
-	}
-
-	public Object getRefreshTokenClaim(String token) {
-		Object claim;
-		try {
-			final Claims claims = this.getAllClaimsFromRefreshToken(token);
-			claim = claims.get("tokenId");
-		} catch (Exception e) {
-			claim = null;
-		}
-		return claim;
-	}
-
-	public boolean isTokenExpired(String token) {
-		Date expireDate=getExpirationDate(token);
-		return expireDate.before(new Date());
-	}
-
-	public boolean isRefreshTokenExpired(String token) {
-		Date expireDate=getRefreshExpirationDate(token);
-		return expireDate.before(new Date());
-	}
-
-	private Date getRefreshExpirationDate(String token) {
-		Date expireDate;
-		try {
-			final Claims claims = this.getAllClaimsFromRefreshToken(token);
-			expireDate = claims.getExpiration();
-		} catch (Exception e) {
-			expireDate = null;
-		}
-		return expireDate;
-	}
-
-	private Date getExpirationDate(String token) {
-		 Date expireDate;
-	        try {
-	            final Claims claims = this.getAllClaimsFromToken(token);
-	            expireDate = claims.getExpiration();
-	        } catch (Exception e) {
-	        	expireDate = null;
-	        }
-	        return expireDate;
-	}
+    public String getUsernameFromRefreshToken(String token) {
+        String username;
+        try {
+            final Claims claims = this.getAllClaimsFromRefreshToken(token);
+            username = claims.getSubject();
+        } catch (Exception e) {
+            username = null;
+        }
+        return username;
+    }
 
 
-	public Date getIssuedAtDateFromToken(String token) {
-	        Date issueAt;
-	        try {
-	            final Claims claims = this.getAllClaimsFromToken(token);
-	            issueAt = claims.getIssuedAt();
-	        } catch (Exception e) {
-	            issueAt = null;
-	        }
-	        return issueAt;
-	  }
-	
-	public String getToken( HttpServletRequest request ) {
-      
-        String authHeader = getAuthHeaderFromHeader( request );
-        if ( authHeader != null && authHeader.startsWith("Bearer ")) {
+    public String generateToken(String username) throws InvalidKeySpecException, NoSuchAlgorithmException {
+
+        return Jwts.builder()
+                .setIssuer(appName)
+                .setSubject(username)
+                .setIssuedAt(new Date())
+                .setExpiration(generateExpirationDate())
+                .signWith(SIGNATURE_ALGORITHM, secretKey)
+                .compact();
+    }
+
+    public String generateRefreshToken(AppUser user, RefreshToken newRefreshToken) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("tokenId", newRefreshToken.getId());
+        return Jwts.builder()
+                .setIssuer(appName)
+                .setSubject(user.getEmail())
+                .addClaims(claims)
+                .setIssuedAt(new Date())
+                .setExpiration(generateRefreshExpirationDate())
+                .signWith(SIGNATURE_ALGORITHM, refreshKey)
+                .compact();
+    }
+
+    private Date generateExpirationDate() {
+        return new Date(System.currentTimeMillis() + (long) expiresIn * 1000);
+    }
+
+    private Date generateRefreshExpirationDate() {
+        return new Date(System.currentTimeMillis() + (long) refreshExpiresIn * 1000);
+    }
+
+
+    public Boolean validateToken(String token, UserDetails userDetails) {
+        final String username = getUsernameFromToken(token);
+        return (
+                username != null &&
+                        username.equals(userDetails.getUsername()) &&
+                        !isTokenExpired(token)
+        );
+    }
+
+    public Boolean validateRefreshToken(String token, AppUser userDetails) {
+        final String username = getUsernameFromRefreshToken(token);
+        return (
+                username != null
+                        && username.equals(userDetails.getEmail())
+                        && !isRefreshTokenExpired(token)
+        );
+    }
+
+    public Object getRefreshTokenClaim(String token) {
+        Object claim;
+        try {
+            final Claims claims = this.getAllClaimsFromRefreshToken(token);
+            return claims.get("tokenId");
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public boolean isTokenExpired(String token) {
+        Date expireDate = getExpirationDate(token);
+        return expireDate.before(new Date());
+    }
+
+    public boolean isRefreshTokenExpired(String token) {
+        Date expireDate = getRefreshExpirationDate(token);
+        return expireDate.before(new Date());
+    }
+
+    private Date getRefreshExpirationDate(String token) {
+        Date expireDate;
+        try {
+            final Claims claims = this.getAllClaimsFromRefreshToken(token);
+            expireDate = claims.getExpiration();
+        } catch (Exception e) {
+            expireDate = null;
+        }
+        return expireDate;
+    }
+
+    private Date getExpirationDate(String token) {
+        Date expireDate;
+        try {
+            final Claims claims = this.getAllClaimsFromToken(token);
+            expireDate = claims.getExpiration();
+        } catch (Exception e) {
+            expireDate = null;
+        }
+        return expireDate;
+    }
+
+
+    public Date getIssuedAtDateFromToken(String token) {
+        Date issueAt;
+        try {
+            final Claims claims = this.getAllClaimsFromToken(token);
+            issueAt = claims.getIssuedAt();
+        } catch (Exception e) {
+            issueAt = null;
+        }
+        return issueAt;
+    }
+
+    public String getToken(HttpServletRequest request) {
+
+        String authHeader = getAuthHeaderFromHeader(request);
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
             return authHeader.substring(7);
         }
 
         return null;
     }
 
-	public String getAuthHeaderFromHeader( HttpServletRequest request ) {
+    public String getAuthHeaderFromHeader(HttpServletRequest request) {
         return request.getHeader("Authorization");
     }
 }
