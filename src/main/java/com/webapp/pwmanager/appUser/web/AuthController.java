@@ -6,6 +6,7 @@ import com.webapp.pwmanager.appUser.requestsDto.LogoutRequest;
 import com.webapp.pwmanager.appUser.requestsDto.TokenRefreshRequest;
 import com.webapp.pwmanager.appUser.responseDto.LoginResponse;
 import com.webapp.pwmanager.appUser.responseDto.Token;
+import com.webapp.pwmanager.appUser.responseDto.TokenRefreshResponse;
 import com.webapp.pwmanager.appUser.responseDto.UserInfo;
 import com.webapp.pwmanager.appUser.service.AppUserService;
 import com.webapp.pwmanager.appUser.service.RefreshTokenService;
@@ -82,9 +83,10 @@ public class AuthController {
         response.setAccessToken("null");
         response.setRefreshToken("null");
         response.setRoles(Arrays.stream(user.getGrantedAuthorities().toArray()).map(Object::toString).collect(Collectors.toList()));
-
         log.info(String.format("User has %s logged IN", user.getEmail()));
         log.info(String.format("Refresh Token '%s' logged IN", newRefreshToken.getTokenValue()));
+        String encryptedToken = SecurityCipher.encrypt(newRefreshToken.getTokenValue());
+        log.info(String.format("Encrypted Token '%s' logged IN", encryptedToken));
         return ResponseEntity.ok().headers(responseHeaders).body(response);
     }
 
@@ -106,8 +108,22 @@ public class AuthController {
     }
 
     @PostMapping("/auth/refresh-token")
-    public ResponseEntity<?> refreshToken(@Valid @RequestBody TokenRefreshRequest request) throws InvalidKeySpecException, NoSuchAlgorithmException {
-        return refreshTokenService.validateRefreshToken(request);
+    public ResponseEntity<?> refreshToken(@CookieValue(name = "accessToken", required = false) String accessToken,
+                                          @CookieValue(name = "refreshToken", required = false) String refreshToken, @RequestBody TokenRefreshRequest request) throws InvalidKeySpecException, NoSuchAlgorithmException {
+        String decryptedRefreshToken = SecurityCipher.decrypt(refreshToken);
+
+        AppUser user= refreshTokenService.validateRefreshToken(accessToken,decryptedRefreshToken, request);
+        HttpHeaders responseHeaders = new HttpHeaders();
+        Token newAccessToken = tokenProvider.generateAccessToken(user.getUsername());
+        Token newRefreshToken = tokenProvider.generateRefreshToken(user);
+        addAccessTokenCookie(responseHeaders, newAccessToken);
+        addRefreshTokenCookie(responseHeaders, newRefreshToken);
+        return ResponseEntity.ok().headers(responseHeaders).body(new TokenRefreshResponse(
+                "null",
+                "null",
+                Arrays.stream(user.getGrantedAuthorities().toArray()).map(Object::toString).collect(Collectors.toList()))
+        );
+
     }
 
     @PostMapping("/auth/logout")
