@@ -57,22 +57,15 @@ public class AuthController {
     private CookieUtil cookieUtil;
 
     @PostMapping("/auth/login")
-    public ResponseEntity<?> login(@Valid @RequestBody AuthenticationRequest authenticationRequest) throws InvalidKeySpecException, NoSuchAlgorithmException {
+    public ResponseEntity<?> login(@Valid @RequestBody AuthenticationRequest authenticationRequest)
+            throws InvalidKeySpecException, NoSuchAlgorithmException {
+
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(authenticationRequest.getUserName(), authenticationRequest.getPassword());
 
         final Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         AppUser user = (AppUser) authentication.getPrincipal();
-
-        /*String accessToken = jWTTokenHelper.generateToken(user.getUsername());
-        String refreshToken = refreshTokenService.createRefreshToken(user);
-
-
-        LoginResponse response = new LoginResponse();
-        response.setAccessToken(accessToken);
-        response.setRefreshToken(refreshToken);
-        response.setRoles(Arrays.stream(user.getGrantedAuthorities().toArray()).map(Object::toString).collect(Collectors.toList()));*/
         HttpHeaders responseHeaders = new HttpHeaders();
         Token newAccessToken = tokenProvider.generateAccessToken(user.getUsername());
         Token newRefreshToken = tokenProvider.generateRefreshToken(user);
