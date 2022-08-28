@@ -35,10 +35,11 @@ public class TokenProviderService {
     private int refreshExpiresIn;
     @Value("${jwt.auth.expires_in}")
     private int expiresIn;
-
-    private final RefreshTokenRepository refreshTokenRepository;
+    @Autowired
+    private final RefreshTokenService refreshTokenService;
 
     private final JWTTokenHelper jWTTokenHelper;
+
 
     public Token generateAccessToken(String subject) throws InvalidKeySpecException, NoSuchAlgorithmException {
         Date expiryDate = jWTTokenHelper.generateExpirationDate();
@@ -50,7 +51,7 @@ public class TokenProviderService {
     public Token generateRefreshToken(AppUser subject) {
         Date expiryDate = jWTTokenHelper.generateRefreshExpirationDate();
         Long duration = new Date().getTime() + refreshExpiresIn * 1000L;
-        String token = createRefreshToken(subject);
+        String token = refreshTokenService.createRefreshToken(subject);
         return new Token(Token.TokenType.REFRESH, token,duration, LocalDateTime.ofInstant(expiryDate.toInstant(), ZoneId.systemDefault()));
     }
 
@@ -75,29 +76,17 @@ public class TokenProviderService {
         return false;
     }
 
-    @Transactional
-    public String createRefreshToken(AppUser user) {
-        boolean exists = refreshTokenRepository.existsByUser(user);
-        if (exists) {
-            refreshTokenRepository.deleteByUser(user);
-        }
-        RefreshToken newRefreshToken = new RefreshToken(user);
-        refreshTokenRepository.save(newRefreshToken);
-
-        return jWTTokenHelper.generateRefreshToken(user, newRefreshToken);
-    }
-
     public Map<String, Token> validateRefreshToken(String accessToken, String refreshToken, AppUser user ) throws InvalidKeySpecException, NoSuchAlgorithmException {
         if (jWTTokenHelper.validateRefreshToken(refreshToken, user)) {
             Integer id = (Integer) jWTTokenHelper.getRefreshTokenClaim(refreshToken);
             Long refreshTokenId = id != null ? Long.valueOf(id) : null;
             assert refreshTokenId != null;
-            if (refreshTokenRepository.existsById(refreshTokenId)) {
+            if (refreshTokenService.existsById(refreshTokenId)) {
 
-                RefreshToken oldRefreshToken = refreshTokenRepository.findById(refreshTokenId).orElse(null);
+                RefreshToken oldRefreshToken = refreshTokenService.findById(refreshTokenId).orElse(null);
 
                 if (oldRefreshToken != null && (Objects.equals(oldRefreshToken.getUser().getId(), user.getId()))) {
-                    refreshTokenRepository.deleteById(refreshTokenId);
+                    refreshTokenService.deleteById(refreshTokenId);
                     Token newAccessToken = generateAccessToken(user.getUsername());
                     Token newRefreshToken = generateRefreshToken(user);
 
@@ -108,9 +97,9 @@ public class TokenProviderService {
         throw new TokenRefreshException(refreshToken, "Refresh token is not in database!");
     }
 
-    public ResponseEntity<?> deleteRefreshTokenByUserName(AppUser user) {
-        refreshTokenRepository.deleteByUser(user);
-        return refreshTokenRepository.deleteByUser(user) == 0 ? ResponseEntity.badRequest().build() : ResponseEntity.accepted().build();
+
+    public ResponseEntity<?> deleteRefreshTokenByUser(AppUser user) {
+        return refreshTokenService.deleteRefreshTokenByUser(user);
     }
 }
 

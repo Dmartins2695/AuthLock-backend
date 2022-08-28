@@ -103,10 +103,10 @@ public class AppUserService implements UserDetailsService {
         Token newAccessToken = tokenProviderService.generateAccessToken(user.getUsername());
         Token newRefreshToken = tokenProviderService.generateRefreshToken(user);
 
-        addAccessTokenCookie(responseHeaders, newAccessToken);
         addRefreshTokenCookie(responseHeaders, newRefreshToken);
 
         LoginResponse response = new LoginResponse();
+        response.setAccessToken(SecurityCipher.encrypt(newAccessToken.getTokenValue()));
         response.setRoles(Arrays.stream(user.getGrantedAuthorities().toArray()).map(Object::toString).collect(Collectors.toList()));
 
         log.info(String.format("User has %s logged IN", user.getEmail()));
@@ -124,11 +124,10 @@ public class AppUserService implements UserDetailsService {
 
         Map<String, Token> tokens = tokenProviderService.validateRefreshToken(accessToken,decryptedRefreshToken, user);
         HttpHeaders responseHeaders = new HttpHeaders();
-        addAccessTokenCookie(responseHeaders, tokens.get("accessToken"));
         addRefreshTokenCookie(responseHeaders, tokens.get("refreshToken"));
         return ResponseEntity.ok()
                 .headers(responseHeaders)
-                .body(new TokenRefreshResponse(
+                .body(new TokenRefreshResponse(SecurityCipher.encrypt(tokens.get("accessToken").getTokenValue()),
                         Arrays.stream(user.getGrantedAuthorities().toArray()).map(Object::toString).collect(Collectors.toList())
                 )
         );
@@ -136,7 +135,7 @@ public class AppUserService implements UserDetailsService {
 
     public ResponseEntity<?> logout(LogoutRequest request) {
         AppUser user = loadUserByUsername(request.getUserName());
-        return tokenProviderService.deleteRefreshTokenByUserName(user);
+        return tokenProviderService.deleteRefreshTokenByUser(user);
     }
 
 

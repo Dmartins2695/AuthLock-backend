@@ -8,5 +8,6 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class TokenRefreshResponse {
+  private String accessToken;
   private List<String> roles;
 }
