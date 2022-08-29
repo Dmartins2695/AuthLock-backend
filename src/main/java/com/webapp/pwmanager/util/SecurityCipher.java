@@ -1,4 +1,4 @@
-package com.webapp.pwmanager.util.Cipher;
+package com.webapp.pwmanager.util;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
@@ -11,8 +11,7 @@ public class SecurityCipher {
 
     private static SecretKeySpec secretKey;
 
-    private static final Cipher CIPHER = new Cipher();
-    private static final String KEY_VALUE = CIPHER.getKeyValue();
+    private static final String KEY_VALUE = "aokdowa";
 
     private SecurityCipher() {
         throw new AssertionError("Static!");

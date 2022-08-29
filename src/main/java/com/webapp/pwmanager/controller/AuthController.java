@@ -7,7 +7,7 @@ import com.webapp.pwmanager.dto.TokenRefreshRequest;
 import com.webapp.pwmanager.dto.UserInfoResponse;
 import com.webapp.pwmanager.service.AppUserService;
 import com.webapp.pwmanager.util.JWTTokenHelper;
-import com.webapp.pwmanager.util.Cipher.SecurityCipher;
+import com.webapp.pwmanager.util.SecurityCipher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

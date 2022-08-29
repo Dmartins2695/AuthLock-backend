@@ -1,6 +1,5 @@
 package com.webapp.pwmanager.util;
 
-import com.webapp.pwmanager.util.Cipher.SecurityCipher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.ResponseCookie;
