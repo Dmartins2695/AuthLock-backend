@@ -3,6 +3,7 @@ package com.webapp.pwmanager.security;
 import com.webapp.pwmanager.service.AppUserService;
 import com.webapp.pwmanager.jwt.JWTAuthenticationFilter;
 import com.webapp.pwmanager.util.JWTTokenHelper;
+import com.webapp.pwmanager.util.SecurityCipher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -39,9 +40,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private AuthenticationEntryPoint authenticationEntryPoint;
 
     @Autowired
-    public SecurityConfiguration(AppUserService appUserService, PasswordEncoder passwordEncoder) {
+    private final SecurityCipher securityCipher;
+
+    @Autowired
+    public SecurityConfiguration(AppUserService appUserService, PasswordEncoder passwordEncoder, SecurityCipher securityCipher) {
         this.appUserService = appUserService;
         this.passwordEncoder = passwordEncoder;
+        this.securityCipher = securityCipher;
     }
 
     @Override
@@ -60,7 +65,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                                 .anyRequest().authenticated()
 
                 )
-                .addFilterBefore(new JWTAuthenticationFilter(appUserService, jWTTokenHelper),
+                .addFilterBefore(new JWTAuthenticationFilter(appUserService, jWTTokenHelper,securityCipher),
                         UsernamePasswordAuthenticationFilter.class);
     }
 

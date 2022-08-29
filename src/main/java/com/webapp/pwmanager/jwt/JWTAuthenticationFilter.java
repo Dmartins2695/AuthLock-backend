@@ -2,6 +2,8 @@ package com.webapp.pwmanager.jwt;
 
 import com.webapp.pwmanager.util.JWTTokenHelper;
 import com.webapp.pwmanager.util.SecurityCipher;
+import org.checkerframework.checker.units.qual.A;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,11 +21,13 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
 	
 	private final UserDetailsService userDetailsService;
 	private final JWTTokenHelper jwtTokenHelper;
+	@Autowired
+	private final SecurityCipher securityCipher;
 	
-	public JWTAuthenticationFilter(UserDetailsService userDetailsService,JWTTokenHelper jwtTokenHelper) {
+	public JWTAuthenticationFilter(UserDetailsService userDetailsService,JWTTokenHelper jwtTokenHelper,SecurityCipher securityCipher) {
 		this.userDetailsService=userDetailsService;
 		this.jwtTokenHelper=jwtTokenHelper;
-		
+		this.securityCipher=securityCipher;
 	}
 
 	@Override
@@ -33,7 +37,7 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
 		
 		String authToken=jwtTokenHelper.getToken(request);
 
-		authToken =SecurityCipher.decrypt(authToken);
+		authToken =securityCipher.decrypt(authToken);
 		
 		if(null!=authToken) {
 			

@@ -3,6 +3,7 @@ package com.webapp.pwmanager.jwt;
 import com.webapp.pwmanager.service.AppUserService;
 import com.webapp.pwmanager.service.TokenProviderService;
 import com.webapp.pwmanager.util.SecurityCipher;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+@AllArgsConstructor
 public class JwtCookieAuthFilter  extends OncePerRequestFilter {
     @Value("${jwt.auth.access_token_cookie_name}")
     private String accessTokenCookieName;
@@ -28,6 +30,8 @@ public class JwtCookieAuthFilter  extends OncePerRequestFilter {
     private TokenProviderService tokenProviderService;
 
     private AppUserService appUserService;
+
+    private SecurityCipher securityCipher;
 
     @Override
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
@@ -52,7 +56,7 @@ public class JwtCookieAuthFilter  extends OncePerRequestFilter {
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
             String accessToken = bearerToken.substring(7);
 
-            return SecurityCipher.decrypt(accessToken);
+            return securityCipher.decrypt(accessToken);
         }
         return null;
     }
@@ -64,7 +68,7 @@ public class JwtCookieAuthFilter  extends OncePerRequestFilter {
                 String accessToken = cookie.getValue();
                 if (accessToken == null) return null;
 
-                return SecurityCipher.decrypt(accessToken);
+                return securityCipher.decrypt(accessToken);
             }
         }
         return null;

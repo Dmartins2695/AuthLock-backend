@@ -5,7 +5,6 @@ import com.webapp.pwmanager.domain.Password;
 import com.webapp.pwmanager.domain.Token;
 import com.webapp.pwmanager.dto.LoginResponse;
 import com.webapp.pwmanager.dto.LogoutRequest;
-import com.webapp.pwmanager.dto.TokenRefreshRequest;
 import com.webapp.pwmanager.dto.TokenRefreshResponse;
 import com.webapp.pwmanager.repository.AppUserRepository;
 import com.webapp.pwmanager.domain.ConfirmationToken;
@@ -15,6 +14,7 @@ import com.webapp.pwmanager.util.JWTTokenHelper;
 import com.webapp.pwmanager.util.SecurityCipher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -27,10 +27,10 @@ import org.springframework.stereotype.Service;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.time.LocalDateTime;
-import java.util.Arrays;
+
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +45,8 @@ public class AppUserService implements UserDetailsService {
     private final CookieUtil cookieUtil;
 
     private final JWTTokenHelper jWTTokenHelper;
+    @Autowired
+    private final SecurityCipher securityCipher;
 
     @Override
     public AppUser loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -110,19 +112,21 @@ public class AppUserService implements UserDetailsService {
         addRefreshTokenCookie(responseHeaders, newRefreshToken);
 
         LoginResponse response = new LoginResponse();
-        response.setAccessToken(SecurityCipher.encrypt(newAccessToken.getTokenValue()));
+        String encrypted = securityCipher.encrypt(newAccessToken.getTokenValue());
+        response.setAccessToken(encrypted);
 
         log.info(String.format("User has %s logged IN", user.getEmail()));
         log.info(String.format("Refresh Token '%s' logged IN", newRefreshToken.getTokenValue()));
 
-        String encryptedToken = SecurityCipher.encrypt(newRefreshToken.getTokenValue());
+        String encryptedToken = securityCipher.encrypt(newRefreshToken.getTokenValue());
         log.info(String.format("Encrypted Token '%s' logged IN", encryptedToken));
 
         return ResponseEntity.ok().headers(responseHeaders).body(response);
     }
 
 
-    public ResponseEntity<?> refresh( String decryptedRefreshToken) throws InvalidKeySpecException, NoSuchAlgorithmException {
+    public ResponseEntity<?> refresh( String refreshToken) throws InvalidKeySpecException, NoSuchAlgorithmException {
+        String decryptedRefreshToken = securityCipher.decrypt(refreshToken);
         String username = jWTTokenHelper.getUsernameFromRefreshToken(decryptedRefreshToken);
         log.info(String.format("Token Has %s in it", username));
         if(username != null){
@@ -132,7 +136,7 @@ public class AppUserService implements UserDetailsService {
             addRefreshTokenCookie(responseHeaders, tokens.get("refreshToken"));
             return ResponseEntity.ok()
                     .headers(responseHeaders)
-                    .body(new TokenRefreshResponse(SecurityCipher.encrypt(tokens.get("accessToken").getTokenValue())));
+                    .body(new TokenRefreshResponse(securityCipher.encrypt(tokens.get("accessToken").getTokenValue())));
         }
         return ResponseEntity.badRequest().build();
     }

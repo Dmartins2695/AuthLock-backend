@@ -12,9 +12,14 @@ public class CookieUtil {
 
     @Value("${jwt.auth.refresh_token_cookie_name}")
     private String refreshTokenCookieName;
+    private final SecurityCipher securityCipher;
+
+    public CookieUtil(SecurityCipher securityCipher) {
+        this.securityCipher = securityCipher;
+    }
 
     public HttpCookie createAccessTokenCookie(String token, Long duration) {
-        String encryptedToken = SecurityCipher.encrypt(token);
+        String encryptedToken = securityCipher.encrypt(token);
         return ResponseCookie.from(accessTokenCookieName, encryptedToken)
                 .maxAge(duration)
                 .httpOnly(true)
@@ -23,7 +28,7 @@ public class CookieUtil {
     }
 
     public HttpCookie createRefreshTokenCookie(String token, Long duration) {
-        String encryptedToken = SecurityCipher.encrypt(token);
+        String encryptedToken = securityCipher.encrypt(token);
         return ResponseCookie.from(refreshTokenCookieName, encryptedToken)
                 .maxAge(duration)
                 .httpOnly(true)

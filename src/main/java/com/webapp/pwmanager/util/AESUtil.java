@@ -17,10 +17,6 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.util.Objects;
 
-/**
- * Encryption and Decryption using AES 256 Algorithm
- *
- */
 public class AESUtil {
 
     public enum DataType {
@@ -87,7 +83,8 @@ public class AESUtil {
             String salt = toHex(generateRandom(keySize / 8));
             String iv = toHex(generateRandom(IV_SIZE / 8));
             String strToDecrypt = encrypt(salt, iv, secret, strToEncrypt);
-            return salt + iv + strToDecrypt;
+            String finalStr = salt + iv + strToDecrypt;
+            return finalStr;
         } catch (Exception e) {
             return null;
         }
