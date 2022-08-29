@@ -11,6 +11,7 @@ import com.webapp.pwmanager.repository.AppUserRepository;
 import com.webapp.pwmanager.domain.ConfirmationToken;
 import com.webapp.pwmanager.security.PasswordEncoder;
 import com.webapp.pwmanager.util.CookieUtil;
+import com.webapp.pwmanager.util.JWTTokenHelper;
 import com.webapp.pwmanager.util.SecurityCipher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +43,8 @@ public class AppUserService implements UserDetailsService {
     private final TokenProviderService tokenProviderService;
 
     private final CookieUtil cookieUtil;
+
+    private final JWTTokenHelper jWTTokenHelper;
 
     @Override
     public AppUser loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -108,7 +111,6 @@ public class AppUserService implements UserDetailsService {
 
         LoginResponse response = new LoginResponse();
         response.setAccessToken(SecurityCipher.encrypt(newAccessToken.getTokenValue()));
-        response.setRoles(Arrays.stream(user.getGrantedAuthorities().toArray()).map(Object::toString).collect(Collectors.toList()));
 
         log.info(String.format("User has %s logged IN", user.getEmail()));
         log.info(String.format("Refresh Token '%s' logged IN", newRefreshToken.getTokenValue()));
@@ -120,16 +122,19 @@ public class AppUserService implements UserDetailsService {
     }
 
 
-    public ResponseEntity<?> refresh(String accessToken, String decryptedRefreshToken, TokenRefreshRequest request) throws InvalidKeySpecException, NoSuchAlgorithmException {
-        AppUser user = loadUserByUsername(request.getUserName());
-
-        Map<String, Token> tokens = tokenProviderService.validateRefreshToken(accessToken, decryptedRefreshToken, user);
-        HttpHeaders responseHeaders = new HttpHeaders();
-        addRefreshTokenCookie(responseHeaders, tokens.get("refreshToken"));
-        return ResponseEntity.ok()
-                .headers(responseHeaders)
-                .body(new TokenRefreshResponse(SecurityCipher.encrypt(tokens.get("accessToken").getTokenValue()),
-                        Arrays.stream(user.getGrantedAuthorities().toArray()).map(Object::toString).collect(Collectors.toList())));
+    public ResponseEntity<?> refresh( String decryptedRefreshToken) throws InvalidKeySpecException, NoSuchAlgorithmException {
+        String username = jWTTokenHelper.getUsernameFromRefreshToken(decryptedRefreshToken);
+        log.info(String.format("Token Has %s in it", username));
+        if(username != null){
+            AppUser user = loadUserByUsername(username);
+            Map<String, Token> tokens = tokenProviderService.validateRefreshToken(decryptedRefreshToken, user);
+            HttpHeaders responseHeaders = new HttpHeaders();
+            addRefreshTokenCookie(responseHeaders, tokens.get("refreshToken"));
+            return ResponseEntity.ok()
+                    .headers(responseHeaders)
+                    .body(new TokenRefreshResponse(SecurityCipher.encrypt(tokens.get("accessToken").getTokenValue())));
+        }
+        return ResponseEntity.badRequest().build();
     }
 
     public ResponseEntity<?> logout(LogoutRequest request) {

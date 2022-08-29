@@ -73,7 +73,7 @@ public class TokenProviderService {
         return false;
     }
 
-    public Map<String, Token> validateRefreshToken(String accessToken, String refreshToken, AppUser user) throws InvalidKeySpecException, NoSuchAlgorithmException {
+    public Map<String, Token> validateRefreshToken(String refreshToken, AppUser user) throws InvalidKeySpecException, NoSuchAlgorithmException {
         if (jWTTokenHelper.validateRefreshToken(refreshToken, user)) {
             Integer id = (Integer) jWTTokenHelper.getRefreshTokenClaim(refreshToken);
             Long refreshTokenId = id != null ? Long.valueOf(id) : null;

@@ -72,11 +72,10 @@ public class AuthController {
     }
 
     @PostMapping("/auth/refresh-token")
-    public ResponseEntity<?> refreshToken(@CookieValue(name = "accessToken", required = false) String accessToken,
-                                          @CookieValue(name = "refreshToken", required = false) String refreshToken, @RequestBody TokenRefreshRequest request) throws InvalidKeySpecException, NoSuchAlgorithmException {
+    public ResponseEntity<?> refreshToken(@CookieValue(name = "refreshToken", required = false) String refreshToken) throws InvalidKeySpecException, NoSuchAlgorithmException {
         String decryptedRefreshToken = SecurityCipher.decrypt(refreshToken);
 
-        return appUserService.refresh(accessToken,decryptedRefreshToken, request);
+        return appUserService.refresh(decryptedRefreshToken);
 
     }
 
