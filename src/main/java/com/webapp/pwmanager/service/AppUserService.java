@@ -11,7 +11,7 @@ import com.webapp.pwmanager.repository.AppUserRepository;
 import com.webapp.pwmanager.domain.ConfirmationToken;
 import com.webapp.pwmanager.security.PasswordEncoder;
 import com.webapp.pwmanager.util.CookieUtil;
-import com.webapp.pwmanager.util.SecurityCipher;
+import com.webapp.pwmanager.util.Cipher.SecurityCipher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;

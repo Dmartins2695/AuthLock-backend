@@ -1,8 +1,5 @@
-package com.webapp.pwmanager.util;
+package com.webapp.pwmanager.util.Cipher;
 
-import org.springframework.beans.factory.annotation.Value;
-
-import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -14,6 +11,9 @@ public class SecurityCipher {
 
     private static SecretKeySpec secretKey;
 
+    private static final Cipher CIPHER = new Cipher();
+    private static final String KEY_VALUE = CIPHER.getKeyValue();
+
     private SecurityCipher() {
         throw new AssertionError("Static!");
     }
@@ -21,8 +21,7 @@ public class SecurityCipher {
     public static void setKey() {
         MessageDigest sha;
         try {
-            String KEYVALUE = "secretKey";
-            byte[] key = KEYVALUE.getBytes(StandardCharsets.UTF_8);
+            byte[] key = KEY_VALUE.getBytes(StandardCharsets.UTF_8);
             sha = MessageDigest.getInstance("SHA-1");
             key = sha.digest(key);
             key = Arrays.copyOf(key, 16);
@@ -37,8 +36,8 @@ public class SecurityCipher {
 
         try {
             setKey();
-            Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+            javax.crypto.Cipher cipher = javax.crypto.Cipher.getInstance("AES/ECB/PKCS5Padding");
+            cipher.init(javax.crypto.Cipher.ENCRYPT_MODE, secretKey);
             return Base64.getEncoder().encodeToString(cipher.doFinal(strToEncrypt.getBytes(StandardCharsets.UTF_8)));
         } catch (Exception e) {
             e.printStackTrace();
@@ -52,8 +51,8 @@ public class SecurityCipher {
 
         try {
             setKey();
-            Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
-            cipher.init(Cipher.DECRYPT_MODE, secretKey);
+            javax.crypto.Cipher cipher = javax.crypto.Cipher.getInstance("AES/ECB/PKCS5Padding");
+            cipher.init(javax.crypto.Cipher.DECRYPT_MODE, secretKey);
             return new String(cipher.doFinal(Base64.getDecoder().decode(strToDecrypt)));
         } catch (Exception e) {
             e.printStackTrace();
