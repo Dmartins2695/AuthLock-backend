@@ -1,6 +1,7 @@
 package com.webapp.pwmanager.jwt;
 
 import com.webapp.pwmanager.util.JWTTokenHelper;
+import com.webapp.pwmanager.util.SecurityCipher;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -31,6 +32,8 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
 		
 		
 		String authToken=jwtTokenHelper.getToken(request);
+
+		authToken =SecurityCipher.decrypt(authToken);
 		
 		if(null!=authToken) {
 			
