@@ -28,31 +28,28 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class TokenProviderService {
 
+    @Autowired
+    private final RefreshTokenService refreshTokenService;
+    private final JWTTokenHelper jWTTokenHelper;
     @Value("${jwt.auth.secret_key}")
     private String tokenSecret;
-
     @Value("${jwt.auth.refresh_expires_in}")
     private int refreshExpiresIn;
     @Value("${jwt.auth.expires_in}")
     private int expiresIn;
-    @Autowired
-    private final RefreshTokenService refreshTokenService;
 
-    private final JWTTokenHelper jWTTokenHelper;
-
-
-    public Token generateAccessToken(String subject) throws InvalidKeySpecException, NoSuchAlgorithmException {
+    public Token generateAccessToken(AppUser subject) throws InvalidKeySpecException, NoSuchAlgorithmException {
         Date expiryDate = jWTTokenHelper.generateExpirationDate();
         Long duration = new Date().getTime() + expiresIn * 60 * 1000L;
         String token = jWTTokenHelper.generateToken(subject);
-        return new Token(Token.TokenType.ACCESS, token ,duration, LocalDateTime.ofInstant(expiryDate.toInstant(), ZoneId.systemDefault()));
+        return new Token(Token.TokenType.ACCESS, token, duration, LocalDateTime.ofInstant(expiryDate.toInstant(), ZoneId.systemDefault()));
     }
 
     public Token generateRefreshToken(AppUser subject) {
         Date expiryDate = jWTTokenHelper.generateRefreshExpirationDate();
         Long duration = new Date().getTime() + refreshExpiresIn * 60 * 1000L;
         String token = refreshTokenService.createRefreshToken(subject);
-        return new Token(Token.TokenType.REFRESH, token,duration, LocalDateTime.ofInstant(expiryDate.toInstant(), ZoneId.systemDefault()));
+        return new Token(Token.TokenType.REFRESH, token, duration, LocalDateTime.ofInstant(expiryDate.toInstant(), ZoneId.systemDefault()));
     }
 
     public String getUsernameFromToken(String token) {
@@ -76,7 +73,7 @@ public class TokenProviderService {
         return false;
     }
 
-    public Map<String, Token> validateRefreshToken(String accessToken, String refreshToken, AppUser user ) throws InvalidKeySpecException, NoSuchAlgorithmException {
+    public Map<String, Token> validateRefreshToken(String accessToken, String refreshToken, AppUser user) throws InvalidKeySpecException, NoSuchAlgorithmException {
         if (jWTTokenHelper.validateRefreshToken(refreshToken, user)) {
             Integer id = (Integer) jWTTokenHelper.getRefreshTokenClaim(refreshToken);
             Long refreshTokenId = id != null ? Long.valueOf(id) : null;
@@ -87,10 +84,10 @@ public class TokenProviderService {
 
                 if (oldRefreshToken != null && (Objects.equals(oldRefreshToken.getUser().getId(), user.getId()))) {
                     refreshTokenService.deleteById(refreshTokenId);
-                    Token newAccessToken = generateAccessToken(user.getUsername());
+                    Token newAccessToken = generateAccessToken(user);
                     Token newRefreshToken = generateRefreshToken(user);
 
-                    return Map.of("accessToken",newAccessToken,"refreshToken",newRefreshToken);
+                    return Map.of("accessToken", newAccessToken, "refreshToken", newRefreshToken);
                 }
             }
         }

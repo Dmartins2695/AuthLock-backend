@@ -42,6 +42,7 @@ public class AppUserService implements UserDetailsService {
     private final TokenProviderService tokenProviderService;
 
     private final CookieUtil cookieUtil;
+
     @Override
     public AppUser loadUserByUsername(String email) throws UsernameNotFoundException {
         return appUserRepository.findByEmail(email)
@@ -96,11 +97,11 @@ public class AppUserService implements UserDetailsService {
         return allByUserId != null ? ResponseEntity.ok(allByUserId) : ResponseEntity.noContent().build();
     }
 
-    public ResponseEntity<?> login (AppUser user) throws InvalidKeySpecException, NoSuchAlgorithmException {
+    public ResponseEntity<?> login(AppUser user) throws InvalidKeySpecException, NoSuchAlgorithmException {
 
         HttpHeaders responseHeaders = new HttpHeaders();
 
-        Token newAccessToken = tokenProviderService.generateAccessToken(user.getUsername());
+        Token newAccessToken = tokenProviderService.generateAccessToken(user);
         Token newRefreshToken = tokenProviderService.generateRefreshToken(user);
 
         addRefreshTokenCookie(responseHeaders, newRefreshToken);
@@ -122,15 +123,13 @@ public class AppUserService implements UserDetailsService {
     public ResponseEntity<?> refresh(String accessToken, String decryptedRefreshToken, TokenRefreshRequest request) throws InvalidKeySpecException, NoSuchAlgorithmException {
         AppUser user = loadUserByUsername(request.getUserName());
 
-        Map<String, Token> tokens = tokenProviderService.validateRefreshToken(accessToken,decryptedRefreshToken, user);
+        Map<String, Token> tokens = tokenProviderService.validateRefreshToken(accessToken, decryptedRefreshToken, user);
         HttpHeaders responseHeaders = new HttpHeaders();
         addRefreshTokenCookie(responseHeaders, tokens.get("refreshToken"));
         return ResponseEntity.ok()
                 .headers(responseHeaders)
                 .body(new TokenRefreshResponse(SecurityCipher.encrypt(tokens.get("accessToken").getTokenValue()),
-                        Arrays.stream(user.getGrantedAuthorities().toArray()).map(Object::toString).collect(Collectors.toList())
-                )
-        );
+                        Arrays.stream(user.getGrantedAuthorities().toArray()).map(Object::toString).collect(Collectors.toList())));
     }
 
     public ResponseEntity<?> logout(LogoutRequest request) {

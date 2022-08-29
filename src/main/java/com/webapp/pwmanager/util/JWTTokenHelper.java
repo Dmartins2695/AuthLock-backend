@@ -13,9 +13,11 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import javax.servlet.http.HttpServletRequest;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 public class JWTTokenHelper {
@@ -83,11 +85,13 @@ public class JWTTokenHelper {
     }
 
 
-    public String generateToken(String username) throws InvalidKeySpecException, NoSuchAlgorithmException {
-
+    public String generateToken(AppUser user) throws InvalidKeySpecException, NoSuchAlgorithmException {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("roles", Arrays.stream(user.getGrantedAuthorities().toArray()).map(Object::toString).collect(Collectors.toList()));
         return Jwts.builder()
                 .setIssuer(appName)
-                .setSubject(username)
+                .setSubject(user.getEmail())
+                .addClaims(claims)
                 .setIssuedAt(new Date())
                 .setExpiration(generateExpirationDate())
                 .signWith(SIGNATURE_ALGORITHM, secretKey)
@@ -97,6 +101,7 @@ public class JWTTokenHelper {
     public String generateRefreshToken(AppUser user, RefreshToken newRefreshToken) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("tokenId", newRefreshToken.getId());
+        claims.put("roles", Arrays.stream(user.getGrantedAuthorities().toArray()).map(Object::toString).collect(Collectors.toList()));
         return Jwts.builder()
                 .setIssuer(appName)
                 .setSubject(user.getEmail())
