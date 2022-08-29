@@ -1,5 +1,7 @@
 package com.webapp.pwmanager.util;
 
+import org.springframework.beans.factory.annotation.Value;
+
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -11,10 +13,18 @@ public class SecurityCipher {
 
     private static SecretKeySpec secretKey;
 
-    private static final String KEY_VALUE = "aokdowa";
+    @Value("${jwt.auth.key_value}")
+    private String keyValue;
+
+    private static String KEY_VALUE = "aokdowa";
 
     private SecurityCipher() {
         throw new AssertionError("Static!");
+    }
+
+    @Value("${jwt.auth.key_value}")
+    public void setKeyValueStatic(String keyValue) {
+        SecurityCipher.KEY_VALUE = keyValue;
     }
 
     public static void setKey() {
