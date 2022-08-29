@@ -108,11 +108,11 @@ public class JWTTokenHelper {
     }
 
     public Date generateExpirationDate() {
-        return new Date(System.currentTimeMillis() + (long) expiresIn * 1000);
+        return new Date(System.currentTimeMillis() + (long) expiresIn * 60 * 1000);
     }
 
     public Date generateRefreshExpirationDate() {
-        return new Date(System.currentTimeMillis() + (long) refreshExpiresIn * 1000);
+        return new Date(System.currentTimeMillis() + (long) refreshExpiresIn * 60 * 1000);
     }
 
 

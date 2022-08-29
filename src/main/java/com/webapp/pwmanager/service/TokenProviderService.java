@@ -43,14 +43,14 @@ public class TokenProviderService {
 
     public Token generateAccessToken(String subject) throws InvalidKeySpecException, NoSuchAlgorithmException {
         Date expiryDate = jWTTokenHelper.generateExpirationDate();
-        Long duration = new Date().getTime() + expiresIn * 1000L;
+        Long duration = new Date().getTime() + expiresIn * 60 * 1000L;
         String token = jWTTokenHelper.generateToken(subject);
         return new Token(Token.TokenType.ACCESS, token ,duration, LocalDateTime.ofInstant(expiryDate.toInstant(), ZoneId.systemDefault()));
     }
 
     public Token generateRefreshToken(AppUser subject) {
         Date expiryDate = jWTTokenHelper.generateRefreshExpirationDate();
-        Long duration = new Date().getTime() + refreshExpiresIn * 1000L;
+        Long duration = new Date().getTime() + refreshExpiresIn * 60 * 1000L;
         String token = refreshTokenService.createRefreshToken(subject);
         return new Token(Token.TokenType.REFRESH, token,duration, LocalDateTime.ofInstant(expiryDate.toInstant(), ZoneId.systemDefault()));
     }
