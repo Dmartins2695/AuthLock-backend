@@ -83,8 +83,7 @@ public class AESUtil {
             String salt = toHex(generateRandom(keySize / 8));
             String iv = toHex(generateRandom(IV_SIZE / 8));
             String strToDecrypt = encrypt(salt, iv, secret, strToEncrypt);
-            String finalStr = salt + iv + strToDecrypt;
-            return finalStr;
+            return salt + iv + strToDecrypt;
         } catch (Exception e) {
             return null;
         }

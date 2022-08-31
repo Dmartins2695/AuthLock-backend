@@ -12,8 +12,7 @@ public class SecurityCipher {
     private final AESUtil aesUtil = new AESUtil();
 
     public String encrypt(String strToEncrypt) {
-        String encrypted = aesUtil.encrypt(keyValue,strToEncrypt);
-        return encrypted;
+        return aesUtil.encrypt(keyValue,strToEncrypt);
     }
 
 

@@ -112,15 +112,10 @@ public class AppUserService implements UserDetailsService {
         addRefreshTokenCookie(responseHeaders, newRefreshToken);
 
         LoginResponse response = new LoginResponse();
-        String encrypted = securityCipher.encrypt(newAccessToken.getTokenValue());
-        response.setAccessToken(encrypted);
+        response.setAccessToken(securityCipher.encrypt(newAccessToken.getTokenValue()));
 
         log.info(String.format("User has %s logged IN", user.getEmail()));
-        log.info(String.format("Refresh Token '%s' logged IN", newRefreshToken.getTokenValue()));
-
-        String encryptedToken = securityCipher.encrypt(newRefreshToken.getTokenValue());
-        log.info(String.format("Encrypted Token '%s' logged IN", encryptedToken));
-
+        log.info(String.format("Token '%s' logged IN", newAccessToken.getTokenValue()));
         return ResponseEntity.ok().headers(responseHeaders).body(response);
     }
 
