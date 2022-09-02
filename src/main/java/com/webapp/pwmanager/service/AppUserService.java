@@ -4,7 +4,6 @@ import com.webapp.pwmanager.domain.AppUser;
 import com.webapp.pwmanager.domain.Password;
 import com.webapp.pwmanager.domain.Token;
 import com.webapp.pwmanager.dto.LoginResponse;
-import com.webapp.pwmanager.dto.LogoutRequest;
 import com.webapp.pwmanager.dto.TokenRefreshResponse;
 import com.webapp.pwmanager.repository.AppUserRepository;
 import com.webapp.pwmanager.domain.ConfirmationToken;
@@ -136,9 +135,18 @@ public class AppUserService implements UserDetailsService {
         return ResponseEntity.badRequest().build();
     }
 
-    public ResponseEntity<?> logout(LogoutRequest request) {
-        AppUser user = loadUserByUsername(request.getUserName());
-        return tokenProviderService.deleteRefreshTokenByUser(user);
+    public ResponseEntity<?> logout(String refreshToken) {
+        String decryptedRefreshToken = securityCipher.decrypt(refreshToken);
+        String username = jWTTokenHelper.getUsernameFromRefreshToken(decryptedRefreshToken);
+        // String tokenId = jWTTokenHelper.getRefreshTokenClaim(decryptedRefreshToken);
+        AppUser user = loadUserByUsername(username);
+        if(tokenProviderService.deleteRefreshTokenByUser(user,decryptedRefreshToken)){
+            HttpHeaders responseHeaders = new HttpHeaders();
+            deleteRefreshTokenCookie(responseHeaders);
+            return ResponseEntity.accepted()
+                    .headers(responseHeaders).build();
+        }
+        return ResponseEntity.badRequest().build();
     }
 
 
@@ -146,8 +154,12 @@ public class AppUserService implements UserDetailsService {
         httpHeaders.add(HttpHeaders.SET_COOKIE, cookieUtil.createAccessTokenCookie(token.getTokenValue(), token.getDuration()).toString());
     }
 
-    private void addRefreshTokenCookie(HttpHeaders httpHeaders, Token token) {
+    private void addRefreshTokenCookie(HttpHeaders httpHeaders, Token token ) {
         httpHeaders.add(HttpHeaders.SET_COOKIE, cookieUtil.createRefreshTokenCookie(token.getTokenValue(), token.getDuration()).toString());
+    }
+
+    private void deleteRefreshTokenCookie(HttpHeaders httpHeaders ) {
+        httpHeaders.add(HttpHeaders.SET_COOKIE, cookieUtil.deleteRefreshTokenCookie().toString());
     }
 }
 

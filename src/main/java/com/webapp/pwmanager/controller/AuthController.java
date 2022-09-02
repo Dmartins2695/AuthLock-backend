@@ -79,7 +79,7 @@ public class AuthController {
 
     @PostMapping("/auth/logout")
     @Transactional
-    public ResponseEntity<?> logout(@Valid @RequestBody LogoutRequest request) {
-        return appUserService.logout(request);
+    public ResponseEntity<?> logout(@CookieValue(name = "refreshToken", required = false) String refreshToken) {
+        return appUserService.logout(refreshToken);
     }
 }

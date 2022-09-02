@@ -3,18 +3,13 @@ package com.webapp.pwmanager.service;
 import com.webapp.pwmanager.domain.AppUser;
 import com.webapp.pwmanager.domain.RefreshToken;
 import com.webapp.pwmanager.domain.Token;
-import com.webapp.pwmanager.dto.LogoutRequest;
-import com.webapp.pwmanager.dto.TokenRefreshRequest;
 import com.webapp.pwmanager.exception.TokenRefreshException;
-import com.webapp.pwmanager.repository.RefreshTokenRepository;
 import com.webapp.pwmanager.util.JWTTokenHelper;
 import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
@@ -78,25 +73,39 @@ public class TokenProviderService {
             Integer id = (Integer) jWTTokenHelper.getRefreshTokenClaim(refreshToken);
             Long refreshTokenId = id != null ? Long.valueOf(id) : null;
             assert refreshTokenId != null;
-            if (refreshTokenService.existsById(refreshTokenId)) {
-
-                RefreshToken oldRefreshToken = refreshTokenService.findById(refreshTokenId).orElse(null);
-
-                if (oldRefreshToken != null && (Objects.equals(oldRefreshToken.getUser().getId(), user.getId()))) {
-                    refreshTokenService.deleteById(refreshTokenId);
-                    Token newAccessToken = generateAccessToken(user);
-                    Token newRefreshToken = generateRefreshToken(user);
-
-                    return Map.of("accessToken", newAccessToken, "refreshToken", newRefreshToken);
-                }
+            if (verifyRefreshTokenUserWithUserId(refreshTokenId, user)) {
+                refreshTokenService.deleteById(refreshTokenId);
+                Token newAccessToken = generateAccessToken(user);
+                Token newRefreshToken = generateRefreshToken(user);
+                return Map.of("accessToken", newAccessToken, "refreshToken", newRefreshToken);
             }
         }
         throw new TokenRefreshException(refreshToken, "Refresh token is not in database!");
     }
 
+    private boolean verifyRefreshTokenUserWithUserId(Long refreshTokenId, AppUser user) throws InvalidKeySpecException, NoSuchAlgorithmException {
+        if (refreshTokenService.existsById(refreshTokenId)) {
 
-    public ResponseEntity<?> deleteRefreshTokenByUser(AppUser user) {
-        return refreshTokenService.deleteRefreshTokenByUser(user);
+            RefreshToken oldRefreshToken = refreshTokenService.findById(refreshTokenId).orElse(null);
+
+            return oldRefreshToken != null && (Objects.equals(oldRefreshToken.getUser().getId(), user.getId()));
+        }
+        return false;
+    }
+
+    public boolean deleteRefreshTokenByUser(AppUser user, String refreshToken) {
+        Integer id = (Integer) jWTTokenHelper.getRefreshTokenClaim(refreshToken);
+        Long refreshTokenId = id != null ? Long.valueOf(id) : null;
+        assert refreshTokenId != null;
+        try {
+            if (verifyRefreshTokenUserWithUserId(refreshTokenId, user)) {
+                refreshTokenService.deleteById(refreshTokenId);
+                return true;
+            }
+            return false;
+        } catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 

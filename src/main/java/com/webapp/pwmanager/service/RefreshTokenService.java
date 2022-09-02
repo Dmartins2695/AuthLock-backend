@@ -34,7 +34,8 @@ public class RefreshTokenService {
 
     public ResponseEntity<?> deleteRefreshTokenByUser(AppUser user) {
         refreshTokenRepository.deleteByUser(user);
-        return refreshTokenRepository.deleteByUser(user) == 0 ? ResponseEntity.badRequest().build() : ResponseEntity.accepted().build();
+        int result = refreshTokenRepository.deleteByUserId(user.getId());
+        return result == 0 ? ResponseEntity.badRequest().build() : ResponseEntity.accepted().build();
     }
 
     public boolean existsById(Long refreshTokenId) {
