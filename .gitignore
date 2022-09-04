@@ -123,6 +123,8 @@ fabric.properties
 
 # Certs
 *.pem
+*.p12
+*.crt
 
 # BlueJ files
 *.ctxt
@@ -142,5 +144,8 @@ fabric.properties
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+#properties
+secrets-*.properties
 
 # End of https://www.toptal.com/developers/gitignore/api/java,intellij
