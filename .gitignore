@@ -121,6 +121,9 @@ fabric.properties
 # Log file
 *.log
 
+# Certs
+*.pem
+
 # BlueJ files
 *.ctxt
 
