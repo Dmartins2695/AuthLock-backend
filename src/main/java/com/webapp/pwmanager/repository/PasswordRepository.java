@@ -12,4 +12,6 @@ public interface PasswordRepository extends JpaRepository<Password, Long> {
     Long countAllByDuplicated(Boolean duplicated);
 
     Set<Password> findAllByFavorite(Boolean favorite);
+
+    Set<Password> findAllByUserId(Long userId);
 }

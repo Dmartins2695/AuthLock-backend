@@ -30,6 +30,10 @@ public class PasswordService {
         this.appUserRepository = appUserRepository;
     }
 
+    public Set<Password> findAllByUser(Long userId) {
+        return passwordRepository.findAllByUserId(userId);
+    }
+
     public List<PasswordDTO> findAll() {
         return passwordRepository.findAll(Sort.by("id"))
                 .stream()

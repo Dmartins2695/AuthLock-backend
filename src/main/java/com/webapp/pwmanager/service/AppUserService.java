@@ -46,6 +46,7 @@ public class AppUserService implements UserDetailsService {
     private final JWTTokenHelper jWTTokenHelper;
     @Autowired
     private final SecurityCipher securityCipher;
+    private final PasswordService passwordService;
 
     @Override
     public AppUser loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -95,9 +96,7 @@ public class AppUserService implements UserDetailsService {
     }
 
     public ResponseEntity<?> getUserStoredPasswords(Long userId) {
-        AppUser user = appUserRepository.findById(userId).orElseThrow(() -> new UsernameNotFoundException(String.format("User email '%s' not found!", userId)));
-        Set<Password> allByUserId = user.getPasswords();
-        log.info(String.format("User has %s logged IN", user.getEmail()));
+        Set<Password> allByUserId = passwordService.findAllByUser(userId);
         return allByUserId != null ? ResponseEntity.ok(allByUserId) : ResponseEntity.noContent().build();
     }
 
