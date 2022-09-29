@@ -111,7 +111,7 @@ public class AppUserService implements UserDetailsService {
         addRefreshTokenCookie(responseHeaders, newRefreshToken);
 
         LoginResponse response = new LoginResponse();
-        response.setAccessToken(securityCipher.encrypt(newAccessToken.getTokenValue()));
+        response.setAccessToken(newAccessToken.getTokenValue());
 
         log.info(String.format("User has %s logged IN", user.getEmail()));
         log.info(String.format("Token '%s' logged IN", newAccessToken.getTokenValue()));
@@ -120,27 +120,24 @@ public class AppUserService implements UserDetailsService {
 
 
     public ResponseEntity<?> refresh( String refreshToken) throws InvalidKeySpecException, NoSuchAlgorithmException {
-        String decryptedRefreshToken = securityCipher.decrypt(refreshToken);
-        String username = jWTTokenHelper.getUsernameFromRefreshToken(decryptedRefreshToken);
+        String username = jWTTokenHelper.getUsernameFromRefreshToken(refreshToken);
         log.info(String.format("Token Has %s in it", username));
         if(username != null){
             AppUser user = loadUserByUsername(username);
-            Map<String, Token> tokens = tokenProviderService.validateRefreshToken(decryptedRefreshToken, user);
+            Map<String, Token> tokens = tokenProviderService.validateRefreshToken(refreshToken, user);
             HttpHeaders responseHeaders = new HttpHeaders();
             addRefreshTokenCookie(responseHeaders, tokens.get("refreshToken"));
             return ResponseEntity.ok()
                     .headers(responseHeaders)
-                    .body(new TokenRefreshResponse(securityCipher.encrypt(tokens.get("accessToken").getTokenValue())));
+                    .body(new TokenRefreshResponse(tokens.get("accessToken").getTokenValue()));
         }
         return ResponseEntity.badRequest().build();
     }
 
     public ResponseEntity<?> logout(String refreshToken) {
-        String decryptedRefreshToken = securityCipher.decrypt(refreshToken);
-        String username = jWTTokenHelper.getUsernameFromRefreshToken(decryptedRefreshToken);
-        // String tokenId = jWTTokenHelper.getRefreshTokenClaim(decryptedRefreshToken);
+        String username = jWTTokenHelper.getUsernameFromRefreshToken(refreshToken);
         AppUser user = loadUserByUsername(username);
-        if(tokenProviderService.deleteRefreshTokenByUser(user,decryptedRefreshToken)){
+        if(tokenProviderService.deleteRefreshTokenByUser(user,refreshToken)){
             HttpHeaders responseHeaders = new HttpHeaders();
             deleteRefreshTokenCookie(responseHeaders);
             return ResponseEntity.accepted()

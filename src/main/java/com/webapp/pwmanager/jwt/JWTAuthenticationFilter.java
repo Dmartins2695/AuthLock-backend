@@ -36,8 +36,6 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
 		
 		
 		String authToken=jwtTokenHelper.getToken(request);
-
-		authToken =securityCipher.decrypt(authToken);
 		
 		if(null!=authToken) {
 			

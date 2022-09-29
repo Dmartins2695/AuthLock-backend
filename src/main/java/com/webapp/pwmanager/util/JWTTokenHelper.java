@@ -88,6 +88,7 @@ public class JWTTokenHelper {
     public String generateToken(AppUser user) throws InvalidKeySpecException, NoSuchAlgorithmException {
         Map<String, Object> claims = new HashMap<>();
         claims.put("roles", Arrays.stream(user.getGrantedAuthorities().toArray()).map(Object::toString).collect(Collectors.toList()));
+        claims.put("id", user.getId());
         return Jwts.builder()
                 .setIssuer(appName)
                 .setSubject(user.getEmail())
