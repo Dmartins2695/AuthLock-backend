@@ -36,8 +36,8 @@ public class ConfirmationTokenService {
     }
 
     public boolean tokenNotConfirmedButValid(Long id) {
-        ConfirmationToken token = confirmationTokenRepository.findConfirmationTokenByAppUserId(id).get();
+        ConfirmationToken token = confirmationTokenRepository.findConfirmationTokenByAppUserId(id).orElse(null);
 
-        return  token.getConfirmedAt() == null && token.getExpiresAt().isAfter(LocalDateTime.now());
+        return  token != null && token.getConfirmedAt() == null && token.getExpiresAt().isAfter(LocalDateTime.now());
     }
 }

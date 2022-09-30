@@ -11,6 +11,7 @@ import javax.validation.Valid;
 
 @RestController
 @RequestMapping(path = "api/v1/registration")
+@CrossOrigin(origins = "https://localhost:3000", maxAge = 3600, methods = {RequestMethod.GET, RequestMethod.POST},allowCredentials = "true")
 @AllArgsConstructor
 public class RegistrationController {
     private RegistrationService registrationService;

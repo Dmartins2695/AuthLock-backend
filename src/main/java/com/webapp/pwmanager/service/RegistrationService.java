@@ -60,7 +60,7 @@ public class RegistrationService {
                 return ResponseEntity.ok(result);
             }
             appUserService.removeAppUserNotConfirmed(existentUser.getEmail());
-            throw new IllegalStateException(String.format("Email %s already exists!", existentUser.getEmail()));
+            return ResponseEntity.badRequest().body(String.format("Email %s already exists!", existentUser.getEmail()));
         }
 
         String token = UUID.randomUUID().toString();
@@ -80,7 +80,7 @@ public class RegistrationService {
 
         sendEmail(newUser, token);
 
-        return success ? ResponseEntity.ok(newUser) : ResponseEntity.noContent().build();
+        return success ? ResponseEntity.ok().build() : ResponseEntity.noContent().build();
 
     }
 
