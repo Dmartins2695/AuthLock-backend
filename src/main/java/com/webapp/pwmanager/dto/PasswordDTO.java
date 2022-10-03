@@ -17,9 +17,6 @@ public class PasswordDTO {
     private String value;
 
     @Size(max = 255)
-    private String hash;
-
-    @Size(max = 255)
     private String websiteUrl;
 
     private Boolean weak;

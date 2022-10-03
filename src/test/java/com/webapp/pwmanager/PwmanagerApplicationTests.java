@@ -43,7 +43,6 @@ class PwmanagerApplicationTests {
 
         Password password = new Password(
                 "password",
-                passwordEncoder.bCryptPasswordEncoder().encode("password"),
                 "http://localhost:8080/",
                 true,
                 false,
@@ -54,7 +53,6 @@ class PwmanagerApplicationTests {
         );
         Password password2 = new Password(
                 "password2",
-                passwordEncoder.bCryptPasswordEncoder().encode("password2"),
                 "http://localhost:8080/1",
                 true,
                 false,

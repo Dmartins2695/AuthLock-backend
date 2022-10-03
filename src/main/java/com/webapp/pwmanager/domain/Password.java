@@ -44,9 +44,6 @@ public class Password {
     private String value;
 
     @Column
-    private String hash;
-
-    @Column
     private String websiteUrl;
 
     @Column
@@ -65,15 +62,14 @@ public class Password {
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime  createdAt;
+    private LocalDateTime createdAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    public Password(String value, String hash, String websiteUrl, Boolean weak, Boolean favorite, Boolean duplicated, AppUser user, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public Password(String value, String websiteUrl, Boolean weak, Boolean favorite, Boolean duplicated, AppUser user, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.value = value;
-        this.hash = hash;
         this.websiteUrl = websiteUrl;
         this.weak = weak;
         this.favorite = favorite;

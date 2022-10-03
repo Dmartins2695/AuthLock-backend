@@ -2,6 +2,7 @@ package com.webapp.pwmanager.service;
 
 import com.webapp.pwmanager.domain.AppUser;
 import com.webapp.pwmanager.domain.Password;
+import com.webapp.pwmanager.dto.DataDTO;
 import com.webapp.pwmanager.dto.PasswordDTO;
 import com.webapp.pwmanager.repository.AppUserRepository;
 import com.webapp.pwmanager.repository.PasswordRepository;
@@ -67,7 +68,6 @@ public class PasswordService {
     private PasswordDTO mapToDTO(final Password password, final PasswordDTO passwordDTO) {
         passwordDTO.setId(password.getId());
         passwordDTO.setValue(password.getValue());
-        passwordDTO.setHash(password.getHash());
         passwordDTO.setWebsiteUrl(password.getWebsiteUrl());
         passwordDTO.setWeak(password.getWeak());
         passwordDTO.setFavorite(password.getFavorite());
@@ -76,9 +76,8 @@ public class PasswordService {
         return passwordDTO;
     }
 
-    private Password mapToEntity(final PasswordDTO passwordDTO, final Password password) {
+    private void mapToEntity(final PasswordDTO passwordDTO, final Password password) {
         password.setValue(passwordDTO.getValue());
-        password.setHash(passwordDTO.getHash());
         password.setWebsiteUrl(passwordDTO.getWebsiteUrl());
         password.setWeak(passwordDTO.getWeak());
         password.setFavorite(passwordDTO.getFavorite());
@@ -89,34 +88,36 @@ public class PasswordService {
         assert user != null;
         user.getPasswords().add(password);
         appUserRepository.save(user);
-        return password;
     }
 
-    public Object countWeakPasswords() {
-        Long count =  passwordRepository.countAllByWeak(true);
-        return count != null ? ResponseEntity.ok(count) : ResponseEntity.noContent().build();
+    public ResponseEntity<?> countWeakPasswords(Long userId) {
+        DataDTO data = new DataDTO(passwordRepository.countByUser_IdAndWeak(userId, true));
+        return ResponseEntity.ok(data);
     }
 
-    public Object countOutdatedPasswords() {
-        List<Password> allPasswords = passwordRepository.findAll();
-        Set<Object> validated = allPasswords.stream().map(this::outdatedValidator).filter(Objects::nonNull).collect(Collectors.toSet());
-        return ResponseEntity.ok(validated.size());
+    public ResponseEntity<?> countOutdatedPasswords(Long userId) {
+        Set<Password> allPasswords = passwordRepository.findAllByUserId(userId);
+        Set<Object> outdated = allPasswords.stream().map(this::outdatedValidator).filter(Objects::nonNull).collect(Collectors.toSet());
+        DataDTO data = new DataDTO((long) outdated.size());
+        return ResponseEntity.ok(data);
     }
 
-    public Object countDuplicatedPasswords() {
-        //TODO: RETURNING WRONG VALUE
-        Long count = passwordRepository.countAllByDuplicated(true);
-        return count != null ? ResponseEntity.ok(count) : ResponseEntity.noContent().build();
+    public ResponseEntity<?> countDuplicatedPasswords(Long userId) {
+        Long count = passwordRepository.countByUser_IdAndDuplicated(userId, true);
+        DataDTO data = new DataDTO(count);
+        return ResponseEntity.ok(data);
     }
 
-    public Object findAllFavoritePasswords() {
-        Set<Password> results = passwordRepository.findAllByFavorite(true);
-        return results != null ? ResponseEntity.ok(results) : ResponseEntity.noContent().build();
+    public ResponseEntity<?> findAllFavoritePasswords(Long userId) {
+        Set<Password> results = passwordRepository.findByUser_IdAndFavorite(userId, true);
+        DataDTO data = new DataDTO(results);
+        return ResponseEntity.ok(data);
     }
 
     private Object outdatedValidator(Password password) {
         Duration duration = Duration.between(password.getUpdatedAt(), password.getCreatedAt());
         long diff = Math.abs(duration.toDays());
-        return diff < 60 ? password : null;
+        return diff > 60 ? password : null;
     }
 }
+

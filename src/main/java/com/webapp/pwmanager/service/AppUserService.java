@@ -28,6 +28,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.time.LocalDateTime;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 
@@ -52,15 +53,6 @@ public class AppUserService implements UserDetailsService {
     public AppUser loadUserByUsername(String email) throws UsernameNotFoundException {
         return appUserRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException(String.format("User email '%s' not found!", email)));
-    }
-
-    public ResponseEntity<?> getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (!(authentication instanceof AnonymousAuthenticationToken)) {
-            String currentUserName = authentication.getName();
-            return ResponseEntity.ok(appUserRepository.findByEmail(currentUserName));
-        }
-        return ResponseEntity.noContent().build();
     }
 
     public boolean singUpUser(AppUser appUser, String token) {
@@ -96,8 +88,12 @@ public class AppUserService implements UserDetailsService {
     }
 
     public ResponseEntity<?> getUserStoredPasswords(Long userId) {
-        Set<Password> allByUserId = passwordService.findAllByUser(userId);
-        return allByUserId != null ? ResponseEntity.ok(allByUserId) : ResponseEntity.noContent().build();
+        if (isUserValid(userId)) {
+            Set<Password> allByUserId = passwordService.findAllByUser(userId);
+            return allByUserId != null ? ResponseEntity.ok(allByUserId) : ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.status(403).build();
+
     }
 
     public ResponseEntity<?> login(AppUser user) throws InvalidKeySpecException, NoSuchAlgorithmException {
@@ -118,10 +114,10 @@ public class AppUserService implements UserDetailsService {
     }
 
 
-    public ResponseEntity<?> refresh( String refreshToken) throws InvalidKeySpecException, NoSuchAlgorithmException {
+    public ResponseEntity<?> refresh(String refreshToken) throws InvalidKeySpecException, NoSuchAlgorithmException {
         String username = jWTTokenHelper.getUsernameFromRefreshToken(refreshToken);
         log.info(String.format("Token Has %s in it", username));
-        if(username != null){
+        if (username != null) {
             AppUser user = loadUserByUsername(username);
             Map<String, Token> tokens = tokenProviderService.validateRefreshToken(refreshToken, user);
             HttpHeaders responseHeaders = new HttpHeaders();
@@ -136,7 +132,7 @@ public class AppUserService implements UserDetailsService {
     public ResponseEntity<?> logout(String refreshToken) {
         String username = jWTTokenHelper.getUsernameFromRefreshToken(refreshToken);
         AppUser user = loadUserByUsername(username);
-        if(tokenProviderService.deleteRefreshTokenByUser(user,refreshToken)){
+        if (tokenProviderService.deleteRefreshTokenByUser(user, refreshToken)) {
             HttpHeaders responseHeaders = new HttpHeaders();
             deleteRefreshTokenCookie(responseHeaders);
             return ResponseEntity.accepted()
@@ -150,12 +146,50 @@ public class AppUserService implements UserDetailsService {
         httpHeaders.add(HttpHeaders.SET_COOKIE, cookieUtil.createAccessTokenCookie(token.getTokenValue(), token.getDuration()).toString());
     }
 
-    private void addRefreshTokenCookie(HttpHeaders httpHeaders, Token token ) {
+    private void addRefreshTokenCookie(HttpHeaders httpHeaders, Token token) {
         httpHeaders.add(HttpHeaders.SET_COOKIE, cookieUtil.createRefreshTokenCookie(token.getTokenValue(), token.getDuration()).toString());
     }
 
-    private void deleteRefreshTokenCookie(HttpHeaders httpHeaders ) {
+    private void deleteRefreshTokenCookie(HttpHeaders httpHeaders) {
         httpHeaders.add(HttpHeaders.SET_COOKIE, cookieUtil.deleteRefreshTokenCookie().toString());
+    }
+
+    public ResponseEntity<?> countWeakPasswords(Long userId) {
+        if (isUserValid(userId)) {
+            return passwordService.countWeakPasswords(userId);
+        }
+        return ResponseEntity.status(403).build();
+    }
+
+    public ResponseEntity<?> countOutdatedPasswords(Long userId) {
+        if (isUserValid(userId)) {
+            return passwordService.countOutdatedPasswords(userId);
+        }
+        return ResponseEntity.status(403).build();
+    }
+
+    public ResponseEntity<?> countDuplicatedPasswords(Long userId) {
+        if (isUserValid(userId)) {
+            return passwordService.countDuplicatedPasswords(userId);
+        }
+        return ResponseEntity.status(403).build();
+    }
+
+    public ResponseEntity<?> findAllFavoritePasswords(Long userId) {
+        if (isUserValid(userId)) {
+            return passwordService.findAllFavoritePasswords(userId);
+        }
+        return ResponseEntity.status(403).build();
+    }
+
+    private boolean isUserValid(Long userId) {
+        AppUser user = appUserRepository.findById(userId).orElse(new AppUser());
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (!(authentication instanceof AnonymousAuthenticationToken)) {
+            String currentUserName = authentication.getName();
+            return currentUserName.equals(user.getEmail());
+        }
+        return false;
     }
 }
 

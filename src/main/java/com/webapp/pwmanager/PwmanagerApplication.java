@@ -57,18 +57,16 @@ public class PwmanagerApplication {
 
             Password password = new Password(
                     "password",
-                    passwordEncoder.bCryptPasswordEncoder().encode("password"),
                     "http://localhost:8080/",
+                    false,
                     true,
-                    false,
-                    false,
+                    true,
                     admin,
                     LocalDateTime.now(),
                     LocalDateTime.now()
             );
             Password password2 = new Password(
                     "password2",
-                    passwordEncoder.bCryptPasswordEncoder().encode("password2"),
                     "http://localhost:8080/1",
                     true,
                     false,
@@ -79,7 +77,6 @@ public class PwmanagerApplication {
             );
             Password password3 = new Password(
                     "password3",
-                    passwordEncoder.bCryptPasswordEncoder().encode("password2"),
                     "http://localhost:8080/1",
                     true,
                     false,
