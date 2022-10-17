@@ -3,10 +3,9 @@ package com.webapp.pwmanager.service;
 import com.webapp.pwmanager.domain.AppUser;
 import com.webapp.pwmanager.domain.Password;
 import com.webapp.pwmanager.dto.DataDTO;
-import com.webapp.pwmanager.dto.PasswordDTO;
+import com.webapp.pwmanager.dto.UpdateDataDto;
 import com.webapp.pwmanager.repository.AppUserRepository;
 import com.webapp.pwmanager.repository.PasswordRepository;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -15,13 +14,17 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 
 @Service
 public class PasswordService {
 
+    public static final Pattern VALID_PASSWORD_REGEX =
+            Pattern.compile("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?& ])[A-Za-z\\d@$!%*?& ]{24,}$");
     private final PasswordRepository passwordRepository;
     private final AppUserRepository appUserRepository;
 
@@ -35,54 +38,66 @@ public class PasswordService {
         return passwordRepository.findAllByUserId(userId);
     }
 
-    public List<PasswordDTO> findAll() {
-        return passwordRepository.findAll(Sort.by("id"))
-                .stream()
-                .map(password -> mapToDTO(password, new PasswordDTO()))
-                .collect(Collectors.toList());
-    }
-
-    public PasswordDTO get(final Long id) {
-        return passwordRepository.findById(id)
-                .map(password -> mapToDTO(password, new PasswordDTO()))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-    }
-
-    public Long create(final PasswordDTO passwordDTO) {
-        final Password password = new Password();
-        mapToEntity(passwordDTO, password);
+    public Long create(final Password password) {
+        final Password newPassword = new Password();
+        mapToEntity(password);
         return passwordRepository.save(password).getId();
     }
 
-    public void update(final Long id, final PasswordDTO passwordDTO) {
-        final Password password = passwordRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        mapToEntity(passwordDTO, password);
-        passwordRepository.save(password);
+    public Password update(final Long userId, final Password oldPassword, UpdateDataDto data) {
+        if (oldPassword != null) {
+            updateDuplicatedMatches(data.getPassword(), userId, oldPassword);
+            oldPassword.setWeak(isWeakPassword(data.getPassword()));
+            oldPassword.setDuplicated(isDuplicatedPassword(data.getPassword(), userId));
+            oldPassword.setValue(data.getPassword());
+            oldPassword.setFavorite(false);
+            oldPassword.setWebsiteUrl(data.getWebsiteUrl());
+            mapToEntity(oldPassword);
+            passwordRepository.save(oldPassword);
+        }
+        return oldPassword;
+    }
+
+    private void updateDuplicatedMatches(String password, Long userId, Password oldPassword) {
+        Set<Password> passwordSet = passwordRepository.findAllByUserId(userId);
+        // old passwords
+        List<Password> duplicatedWithOldPassword = getDuplicatedPasswordsList(passwordSet, oldPassword.getValue(), oldPassword.getId());
+
+        if (duplicatedWithOldPassword.size() == 1) {
+            duplicatedWithOldPassword.forEach(item -> {
+                item.setDuplicated(false);
+                passwordRepository.save(item);
+            });
+        }
+
+        List<Password> duplicatedWithNewPassword = getDuplicatedPasswordsList(passwordSet, password, oldPassword.getId());
+
+        duplicatedWithNewPassword.forEach(item -> {
+            item.setDuplicated(true);
+            passwordRepository.save(item);
+        });
+    }
+
+    private List<Password> getDuplicatedPasswordsList(Set<Password> set, String s, Long id) {
+        return set.stream()
+                .map(item -> s.equals(item.getValue()) && !item.getId().equals(id) ? item : null).filter(Objects::nonNull).collect(Collectors.toList());
+    }
+
+    private boolean isDuplicatedPassword(String password, Long userId) {
+        Set<Password> passwordSet = passwordRepository.findAllByUserId(userId);
+        return passwordSet.stream().anyMatch(item -> password.equals(item.getValue()));
+    }
+
+    private boolean isWeakPassword(String password) {
+        return !VALID_PASSWORD_REGEX.matcher(password).matches();
     }
 
     public void delete(final Long id) {
         passwordRepository.deleteById(id);
     }
 
-    private PasswordDTO mapToDTO(final Password password, final PasswordDTO passwordDTO) {
-        passwordDTO.setId(password.getId());
-        passwordDTO.setValue(password.getValue());
-        passwordDTO.setWebsiteUrl(password.getWebsiteUrl());
-        passwordDTO.setWeak(password.getWeak());
-        passwordDTO.setFavorite(password.getFavorite());
-        passwordDTO.setDuplicated(password.getDuplicated());
-        passwordDTO.setUserId(password.getUser() == null ? null : password.getUser().getId());
-        return passwordDTO;
-    }
-
-    private void mapToEntity(final PasswordDTO passwordDTO, final Password password) {
-        password.setValue(passwordDTO.getValue());
-        password.setWebsiteUrl(passwordDTO.getWebsiteUrl());
-        password.setWeak(passwordDTO.getWeak());
-        password.setFavorite(passwordDTO.getFavorite());
-        password.setDuplicated(passwordDTO.getDuplicated());
-        final AppUser user = passwordDTO.getUserId() == null ? null : appUserRepository.findById(passwordDTO.getUserId())
+    private void mapToEntity(final Password password) {
+        final AppUser user = password.getUser().getId() == null ? null : appUserRepository.findById(password.getUser().getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));
         password.setUser(user);
         assert user != null;
@@ -118,6 +133,10 @@ public class PasswordService {
         Duration duration = Duration.between(password.getUpdatedAt(), password.getCreatedAt());
         long diff = Math.abs(duration.toDays());
         return diff > 60 ? password : null;
+    }
+
+    public Optional<Password> findById(Long id) {
+        return passwordRepository.findById(id);
     }
 }
 

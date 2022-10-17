@@ -1,5 +1,6 @@
 package com.webapp.pwmanager.controller;
 
+import com.webapp.pwmanager.dto.UpdateDataDto;
 import com.webapp.pwmanager.service.AppUserService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -41,5 +42,11 @@ public class AppUserController {
     @GetMapping("/stored-passwords/favorites/{userId}")
     public ResponseEntity<?> findAllFavoritePasswords(@Valid @PathVariable Long userId) {
         return appUserService.findAllFavoritePasswords(userId);
+    }
+
+    @PostMapping("{userId}/{id}/update")
+    public ResponseEntity<?> updatePassword(@Valid @PathVariable Long userId, @PathVariable Long id, @Valid @RequestBody UpdateDataDto data) {
+         System.out.printf("Failed for [%s]: %s, %s %s", userId, id, data.getPassword(), data.getWebsiteUrl());
+        return appUserService.updateUserPassword(userId,id,data);
     }
 }

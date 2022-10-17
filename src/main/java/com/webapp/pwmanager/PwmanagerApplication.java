@@ -66,11 +66,11 @@ public class PwmanagerApplication {
                     LocalDateTime.now()
             );
             Password password2 = new Password(
-                    "password2",
+                    "password",
                     "http://localhost:8080/1",
                     true,
                     false,
-                    false,
+                    true,
                     admin,
                     LocalDateTime.now(),
                     LocalDateTime.now()

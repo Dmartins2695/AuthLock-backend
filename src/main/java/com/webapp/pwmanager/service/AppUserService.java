@@ -4,7 +4,9 @@ import com.webapp.pwmanager.domain.AppUser;
 import com.webapp.pwmanager.domain.Password;
 import com.webapp.pwmanager.domain.Token;
 import com.webapp.pwmanager.dto.LoginResponse;
+import com.webapp.pwmanager.dto.PasswordDTO;
 import com.webapp.pwmanager.dto.TokenRefreshResponse;
+import com.webapp.pwmanager.dto.UpdateDataDto;
 import com.webapp.pwmanager.repository.AppUserRepository;
 import com.webapp.pwmanager.domain.ConfirmationToken;
 import com.webapp.pwmanager.security.PasswordEncoder;
@@ -190,6 +192,16 @@ public class AppUserService implements UserDetailsService {
             return currentUserName.equals(user.getEmail());
         }
         return false;
+    }
+
+    public ResponseEntity<?> updateUserPassword(Long userId, Long id, UpdateDataDto data) {
+        Password oldPassword = passwordService.findById(id).orElse(null);
+        assert oldPassword != null;
+        if (oldPassword.getValue().equals(data.getPassword())) {
+            return ResponseEntity.badRequest().body("New password is the same as old password");
+        }
+        Password newPassword = passwordService.update(userId, oldPassword, data);
+        return newPassword != null ? ResponseEntity.ok().body(newPassword) : ResponseEntity.badRequest().build();
     }
 }
 
