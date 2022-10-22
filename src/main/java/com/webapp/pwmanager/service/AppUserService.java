@@ -195,13 +195,26 @@ public class AppUserService implements UserDetailsService {
     }
 
     public ResponseEntity<?> updateUserPassword(Long userId, Long id, UpdateDataDto data) {
-        Password oldPassword = passwordService.findById(id).orElse(null);
-        assert oldPassword != null;
-        if (oldPassword.getValue().equals(data.getPassword())) {
-            return ResponseEntity.badRequest().body("New password is the same as old password");
+        if (isUserValid(userId)) {
+            Password oldPassword = passwordService.findById(id).orElse(null);
+            assert oldPassword != null;
+            if (oldPassword.getValue().equals(data.getPassword())) {
+                return ResponseEntity.badRequest().body("Update can't be concluded if same password provided");
+            }
+            Password newPassword = passwordService.update(userId, oldPassword, data);
+            return newPassword != null ? ResponseEntity.ok().body(newPassword) : ResponseEntity.badRequest().build();
         }
-        Password newPassword = passwordService.update(userId, oldPassword, data);
-        return newPassword != null ? ResponseEntity.ok().body(newPassword) : ResponseEntity.badRequest().build();
+        return ResponseEntity.status(403).build();
+    }
+
+    public ResponseEntity<?> createUserPassword(Long userId, UpdateDataDto data) {
+        if (isUserValid(userId)) {
+            AppUser user = appUserRepository.findById(userId).orElse(null);
+            assert user != null;
+            Password newPassword = passwordService.create(user, data);
+            return newPassword != null ? ResponseEntity.ok().body(newPassword) : ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.status(403).build();
     }
 }
 

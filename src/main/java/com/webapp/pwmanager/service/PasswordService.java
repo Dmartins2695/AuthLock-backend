@@ -38,10 +38,20 @@ public class PasswordService {
         return passwordRepository.findAllByUserId(userId);
     }
 
-    public Long create(final Password password) {
-        final Password newPassword = new Password();
-        mapToEntity(password);
-        return passwordRepository.save(password).getId();
+    public Password create(AppUser user, UpdateDataDto data) {
+        if (!data.getPassword().isEmpty() && !data.getWebsiteUrl().isEmpty()) {
+            final Password newPassword = new Password();
+            newPassword.setUser(user);
+            newPassword.setValue(data.getPassword());
+            newPassword.setWebsiteUrl(data.getWebsiteUrl());
+            newPassword.setFavorite(false);
+            newPassword.setWeak(isWeakPassword(data.getPassword()));
+            newPassword.setDuplicated(isDuplicatedPassword(data.getPassword(), user.getId()));
+            updateDuplicatedMatches(data.getPassword(), user.getId(), newPassword);
+            passwordRepository.save(newPassword);
+            return newPassword;
+        }
+        return null;
     }
 
     public Password update(final Long userId, final Password oldPassword, UpdateDataDto data) {
@@ -61,6 +71,12 @@ public class PasswordService {
     private void updateDuplicatedMatches(String password, Long userId, Password oldPassword) {
         Set<Password> passwordSet = passwordRepository.findAllByUserId(userId);
         // old passwords
+        matchWithOldPassword(userId, oldPassword, passwordSet);
+
+        matchWithNewPassword(userId, password, oldPassword.getId(), passwordSet);
+    }
+
+    private void matchWithOldPassword(Long userId, Password oldPassword, Set<Password> passwordSet) {
         List<Password> duplicatedWithOldPassword = getDuplicatedPasswordsList(passwordSet, oldPassword.getValue(), oldPassword.getId());
 
         if (duplicatedWithOldPassword.size() == 1) {
@@ -69,8 +85,10 @@ public class PasswordService {
                 passwordRepository.save(item);
             });
         }
+    }
 
-        List<Password> duplicatedWithNewPassword = getDuplicatedPasswordsList(passwordSet, password, oldPassword.getId());
+    private void matchWithNewPassword(Long userId, String password, Long passwordId, Set<Password> passwordSet) {
+        List<Password> duplicatedWithNewPassword = getDuplicatedPasswordsList(passwordSet, password, passwordId);
 
         duplicatedWithNewPassword.forEach(item -> {
             item.setDuplicated(true);

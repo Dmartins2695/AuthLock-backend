@@ -46,7 +46,11 @@ public class AppUserController {
 
     @PostMapping("{userId}/{id}/update")
     public ResponseEntity<?> updatePassword(@Valid @PathVariable Long userId, @PathVariable Long id, @Valid @RequestBody UpdateDataDto data) {
-         System.out.printf("Failed for [%s]: %s, %s %s", userId, id, data.getPassword(), data.getWebsiteUrl());
         return appUserService.updateUserPassword(userId,id,data);
+    }
+
+    @PostMapping("{userId}/create")
+    public ResponseEntity<?> createPassword(@Valid @PathVariable Long userId, @Valid @RequestBody UpdateDataDto data) {
+        return appUserService.createUserPassword(userId,data);
     }
 }
