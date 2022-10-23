@@ -44,7 +44,7 @@ public class AppUserController {
         return appUserService.findAllFavoritePasswords(userId);
     }
 
-    @PostMapping("{userId}/{id}/update")
+    @PatchMapping("{userId}/{id}/update")
     public ResponseEntity<?> updatePassword(@Valid @PathVariable Long userId, @PathVariable Long id, @Valid @RequestBody UpdateDataDto data) {
         return appUserService.updateUserPassword(userId,id,data);
     }
@@ -52,5 +52,15 @@ public class AppUserController {
     @PostMapping("{userId}/create")
     public ResponseEntity<?> createPassword(@Valid @PathVariable Long userId, @Valid @RequestBody UpdateDataDto data) {
         return appUserService.createUserPassword(userId,data);
+    }
+
+    @PatchMapping("{userId}/{id}/favorite")
+    public ResponseEntity<?> setFavorite(@Valid @PathVariable Long userId, @PathVariable Long id) {
+        return appUserService.setFavorite(userId,id);
+    }
+
+    @DeleteMapping("{userId}/{id}/delete")
+    public ResponseEntity<?> deletePassword(@Valid @PathVariable Long userId, @PathVariable Long id) {
+        return appUserService.deletePassword(userId,id);
     }
 }

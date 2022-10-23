@@ -216,5 +216,25 @@ public class AppUserService implements UserDetailsService {
         }
         return ResponseEntity.status(403).build();
     }
+
+    public ResponseEntity<?> setFavorite(Long userId, Long id) {
+        if (isUserValid(userId)) {
+            AppUser user = appUserRepository.findById(userId).orElse(null);
+            assert user != null;
+            Password newPassword = passwordService.setFavorite(user, id);
+            return newPassword != null ? ResponseEntity.ok().body(newPassword) : ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.status(403).build();
+    }
+
+    public ResponseEntity<?> deletePassword(Long userId, Long id) {
+        if (isUserValid(userId)) {
+            AppUser user = appUserRepository.findById(userId).orElse(null);
+            assert user != null;
+            passwordService.delete(id);
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.status(403).build();
+    }
 }
 

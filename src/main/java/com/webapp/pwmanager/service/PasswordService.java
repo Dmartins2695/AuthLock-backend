@@ -156,5 +156,13 @@ public class PasswordService {
     public Optional<Password> findById(Long id) {
         return passwordRepository.findById(id);
     }
+
+    public Password setFavorite(AppUser user, Long id) {
+        Password password = passwordRepository.findById(id).orElse(null);
+        assert password != null;
+        password.setFavorite(!password.getFavorite());
+        passwordRepository.save(password);
+        return password;
+    }
 }
 
