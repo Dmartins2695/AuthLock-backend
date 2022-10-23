@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @SpringBootTest
 class PwmanagerApplicationTests {
 
-    @Autowired
+   /* @Autowired
     AppUserRepository appUserRepository;
     @Autowired
     PasswordEncoder passwordEncoder;
@@ -129,5 +129,5 @@ class PwmanagerApplicationTests {
     private List<Password> getDuplicatedPasswordsList(Set<Password> set, String s, Long id) {
         return set.stream()
                 .map(item -> s.equals(item.getValue()) && !item.getId().equals(id) ? item : null).filter(Objects::nonNull).collect(Collectors.toList());
-    }
+    }*/
 }
