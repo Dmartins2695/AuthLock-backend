@@ -221,8 +221,8 @@ public class AppUserService implements UserDetailsService {
         if (isUserValid(userId)) {
             AppUser user = appUserRepository.findById(userId).orElse(null);
             assert user != null;
-            Password newPassword = passwordService.setFavorite(user, id);
-            return newPassword != null ? ResponseEntity.ok().body(newPassword) : ResponseEntity.badRequest().build();
+            passwordService.setFavorite(user, id);
+            return ResponseEntity.ok().build();
         }
         return ResponseEntity.status(403).build();
     }

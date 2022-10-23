@@ -157,12 +157,11 @@ public class PasswordService {
         return passwordRepository.findById(id);
     }
 
-    public Password setFavorite(AppUser user, Long id) {
+    public void setFavorite(AppUser user, Long id) {
         Password password = passwordRepository.findById(id).orElse(null);
         assert password != null;
         password.setFavorite(!password.getFavorite());
         passwordRepository.save(password);
-        return password;
     }
 }
 
