@@ -28,7 +28,6 @@ import java.security.spec.InvalidKeySpecException;
 
 @RestController
 @RequestMapping("/api/v1")
-@CrossOrigin(origins = "https://localhost:3000", maxAge = 3600, methods = {RequestMethod.GET, RequestMethod.POST},allowCredentials = "true")
 @Slf4j
 @RequiredArgsConstructor
 public class AuthController {

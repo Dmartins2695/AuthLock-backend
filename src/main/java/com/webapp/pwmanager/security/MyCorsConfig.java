@@ -16,7 +16,7 @@ public class MyCorsConfig implements Filter {
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        final HttpServletResponse response = (HttpServletResponse) servletResponse;
+        /*final HttpServletResponse response = (HttpServletResponse) servletResponse;
         response.setHeader("Access-Control-Allow-Origin", "https://localhost:3000");
         response.setHeader("Access-Control-Allow-Methods", "POST, PUT, PATCH, GET, OPTIONS, DELETE");
         response.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type, enctype");
@@ -26,7 +26,7 @@ public class MyCorsConfig implements Filter {
             response.setStatus(HttpServletResponse.SC_OK);
         } else {
             filterChain.doFilter(servletRequest, servletResponse);
-        }
+        }*/
     }
 
     @Override
