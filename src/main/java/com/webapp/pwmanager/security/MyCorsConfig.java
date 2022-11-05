@@ -12,9 +12,9 @@ import java.io.IOException;
 
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class MyCorsConfig implements Filter {
+public class MyCorsConfig {
 
-    @Override
+    /*@Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         final HttpServletResponse response = (HttpServletResponse) servletResponse;
         final HttpServletRequest request = (HttpServletRequest) servletRequest;
@@ -36,5 +36,5 @@ public class MyCorsConfig implements Filter {
 
     @Override
     public void init(FilterConfig config) throws ServletException {
-    }
+    }*/
 }

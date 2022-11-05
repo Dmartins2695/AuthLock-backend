@@ -42,13 +42,11 @@ com\webapp\pwmanager\util\CookieUtil.class
 com\webapp\pwmanager\service\ConfirmationTokenService.class
 com\webapp\pwmanager\dto\LogoutRequest.class
 com\webapp\pwmanager\domain\Email.class
-com\webapp\pwmanager\security\ConnectorConfig.class
 com\webapp\pwmanager\controller\RegistrationController.class
 com\webapp\pwmanager\dto\UserInfoResponse.class
 com\webapp\pwmanager\service\EmailService.class
 com\webapp\pwmanager\service\TokenProviderService.class
 com\webapp\pwmanager\domain\AppUserPermission.class
-com\webapp\pwmanager\security\ConnectorConfig$1.class
 com\webapp\pwmanager\domain\AppUser.class
 com\webapp\pwmanager\domain\RefreshToken.class
 com\webapp\pwmanager\dto\DataDTO.class

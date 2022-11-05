@@ -21,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 import static com.webapp.pwmanager.domain.AppUserRole.ADMIN;
 
@@ -58,7 +59,11 @@ public class SecurityConfiguration{
     }
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.requiresChannel().anyRequest().requiresSecure()
+        http
+                .csrf()
+                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                .and()
+                .requiresChannel().anyRequest().requiresSecure()
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
@@ -73,6 +78,8 @@ public class SecurityConfiguration{
                 );
         http.addFilterBefore(new JWTAuthenticationFilter(appUserService, jWTTokenHelper,securityCipher),
                         UsernamePasswordAuthenticationFilter.class);
+        http.headers()
+                .contentSecurityPolicy("script-src 'self' https://authlock.netlify.app; object-src https://authlock.netlify.app; report-uri /csp-report-endpoint/");
         return http.build();
     }
 

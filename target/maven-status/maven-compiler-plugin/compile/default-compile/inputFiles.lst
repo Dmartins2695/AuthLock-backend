@@ -21,7 +21,6 @@ C:\Users\PC\Desktop\Personal Projects\PassW\backend\src\main\java\com\webapp\pwm
 C:\Users\PC\Desktop\Personal Projects\PassW\backend\src\main\java\com\webapp\pwmanager\domain\Password.java
 C:\Users\PC\Desktop\Personal Projects\PassW\backend\src\main\java\com\webapp\pwmanager\repository\ConfirmationTokenRepository.java
 C:\Users\PC\Desktop\Personal Projects\PassW\backend\src\main\java\com\webapp\pwmanager\service\ConfirmationTokenService.java
-C:\Users\PC\Desktop\Personal Projects\PassW\backend\src\main\java\com\webapp\pwmanager\security\ConnectorConfig.java
 C:\Users\PC\Desktop\Personal Projects\PassW\backend\src\main\java\com\webapp\pwmanager\PwmanagerApplication.java
 C:\Users\PC\Desktop\Personal Projects\PassW\backend\src\main\java\com\webapp\pwmanager\repository\PasswordRepository.java
 C:\Users\PC\Desktop\Personal Projects\PassW\backend\src\main\java\com\webapp\pwmanager\controller\AppUserController.java

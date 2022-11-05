@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="PwmanagerApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
-    <option name="ACTIVE_PROFILES" value="dev" />
+    <option name="ACTIVE_PROFILES" value="prod" />
     <module name="backend" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="com.webapp.pwmanager.PwmanagerApplication" />
     <extension name="coverage">
