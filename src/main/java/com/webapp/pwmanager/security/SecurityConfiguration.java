@@ -78,8 +78,6 @@ public class SecurityConfiguration{
                 );
         http.addFilterBefore(new JWTAuthenticationFilter(appUserService, jWTTokenHelper,securityCipher),
                         UsernamePasswordAuthenticationFilter.class);
-        http.headers()
-                .contentSecurityPolicy("script-src 'self' https://authlock.netlify.app; object-src https://authlock.netlify.app; report-uri /csp-report-endpoint/");
         return http.build();
     }
 
