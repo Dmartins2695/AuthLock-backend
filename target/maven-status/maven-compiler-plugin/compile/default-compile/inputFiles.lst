@@ -42,6 +42,7 @@ C:\Users\PC\Desktop\Personal Projects\PassW\backend\src\main\java\com\webapp\pwm
 C:\Users\PC\Desktop\Personal Projects\PassW\backend\src\main\java\com\webapp\pwmanager\dto\UserInfoResponse.java
 C:\Users\PC\Desktop\Personal Projects\PassW\backend\src\main\java\com\webapp\pwmanager\jwt\RestAuthenticationEntryPoint.java
 C:\Users\PC\Desktop\Personal Projects\PassW\backend\src\main\java\com\webapp\pwmanager\service\TokenProviderService.java
+C:\Users\PC\Desktop\Personal Projects\PassW\backend\src\main\java\com\webapp\pwmanager\config\ConnectorConfig.java
 C:\Users\PC\Desktop\Personal Projects\PassW\backend\src\main\java\com\webapp\pwmanager\security\SecurityConfiguration.java
 C:\Users\PC\Desktop\Personal Projects\PassW\backend\src\main\java\com\webapp\pwmanager\config\ThymeleafTemplateConfig.java
 C:\Users\PC\Desktop\Personal Projects\PassW\backend\src\main\java\com\webapp\pwmanager\repository\AppUserRepository.java

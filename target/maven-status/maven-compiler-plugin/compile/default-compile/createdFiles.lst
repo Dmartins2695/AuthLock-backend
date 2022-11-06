@@ -1,6 +1,7 @@
 com\webapp\pwmanager\service\RegistrationService.class
 com\webapp\pwmanager\advice\TokenControllerAdvice.class
 com\webapp\pwmanager\util\EmailValidator.class
+com\webapp\pwmanager\config\ConnectorConfig$1.class
 com\webapp\pwmanager\jwt\JwtCookieAuthFilter.class
 com\webapp\pwmanager\service\EmailSender.class
 com\webapp\pwmanager\dto\TokenRefreshResponse.class
@@ -40,6 +41,7 @@ com\webapp\pwmanager\dto\TokenRefreshRequest.class
 com\webapp\pwmanager\repository\RefreshTokenRepository.class
 com\webapp\pwmanager\util\CookieUtil.class
 com\webapp\pwmanager\service\ConfirmationTokenService.class
+com\webapp\pwmanager\config\ConnectorConfig.class
 com\webapp\pwmanager\dto\LogoutRequest.class
 com\webapp\pwmanager\domain\Email.class
 com\webapp\pwmanager\controller\RegistrationController.class
