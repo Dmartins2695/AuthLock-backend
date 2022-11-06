@@ -30,6 +30,7 @@ com\webapp\pwmanager\dto\ConfirmationEmailDto.class
 com\webapp\pwmanager\exception\TokenRefreshException.class
 com\webapp\pwmanager\domain\Token.class
 com\webapp\pwmanager\service\RefreshTokenService.class
+com\webapp\pwmanager\util\SecurityCipher.class
 com\webapp\pwmanager\repository\PasswordRepository.class
 com\webapp\pwmanager\util\AESUtil$DataType.class
 com\webapp\pwmanager\security\SwaggerUiWebMvcConfigurer.class
@@ -37,12 +38,15 @@ com\webapp\pwmanager\domain\AppUserRole.class
 com\webapp\pwmanager\dto\AuthenticationRequest.class
 com\webapp\pwmanager\dto\TokenRefreshRequest.class
 com\webapp\pwmanager\repository\RefreshTokenRepository.class
+com\webapp\pwmanager\util\CookieUtil.class
 com\webapp\pwmanager\service\ConfirmationTokenService.class
+com\webapp\pwmanager\dto\LogoutRequest.class
 com\webapp\pwmanager\domain\Email.class
 com\webapp\pwmanager\controller\RegistrationController.class
 com\webapp\pwmanager\dto\UserInfoResponse.class
 com\webapp\pwmanager\service\EmailService.class
 com\webapp\pwmanager\service\TokenProviderService.class
+com\webapp\pwmanager\domain\AppUserPermission.class
 com\webapp\pwmanager\domain\AppUser.class
 com\webapp\pwmanager\domain\RefreshToken.class
 com\webapp\pwmanager\dto\DataDTO.class
